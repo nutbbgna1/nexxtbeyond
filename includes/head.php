@@ -14,7 +14,7 @@ $pageDesc = $pageDesc ?? "Next Beyond Academy — เรียนอย่าง
   <link rel="preload" as="image" href="<?= htmlspecialchars($preloadImage) ?>" fetchpriority="high">
   <?php endif; ?>
   <link rel="stylesheet" href="assets/css/output.css">
-  <script defer src="assets/js/app.js"></script>
+  <script defer src="assets/js/app.js?v=<?= filemtime(__DIR__ . '/../assets/js/app.js') ?>"></script>
   <?= $extraHead ?? "" ?>
 </head>
 <body class="text-ink bg-surface font-sans leading-relaxed">

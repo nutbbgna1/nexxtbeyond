@@ -14,7 +14,7 @@
   let startedAt = 0;
   let publishedExams = [];
 
-  function isLoggedIn() { return localStorage.getItem("nb_user_role") === "student" && !!localStorage.getItem("nb_user"); }
+  function isLoggedIn() { return ["student", "admin"].includes(localStorage.getItem("nb_user_role")) && !!localStorage.getItem("nb_user"); }
   function publicExams() { return publishedExams; }
 
   async function loadPublicExams() {
@@ -145,6 +145,7 @@
     document.querySelectorAll('[data-test-item]').forEach(item => { item.style.display = (!subjects.length || subjects.includes(item.dataset.subject)) && (!types.length || types.includes(item.dataset.type)) ? 'flex' : 'none'; });
   };
   renderHistory();
+  Promise.resolve(window.nbAuthReady).then(() => renderHistory());
   if (new URLSearchParams(location.search).get("view") === "history") {
     document.querySelector('[data-tests-tab="history"]')?.click();
   }

@@ -26,33 +26,72 @@
 
   const authLink = document.querySelector("[data-auth-link]");
   const mobileAuthLink = document.querySelector("[data-mobile-auth]");
-  if (authLink && localStorage.getItem("nb_user_role") === "student") {
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem("nb_user")); } catch { user = null; }
-    if (user) {
-      const group = document.createElement("div");
-      group.className = "flex items-center gap-4";
-      const scores = document.createElement("a");
-      scores.href = "placement-test.php?view=history#test-workspace";
-      scores.className = authLink.className;
-      scores.textContent = "คะแนนของฉัน";
-      const logout = document.createElement("button");
-      logout.type = "button";
-      logout.className = "text-[#a0aabf] hover:text-white text-[13px] font-bold";
-      logout.textContent = "ออกจากระบบ";
-      logout.addEventListener("click", () => {
-        localStorage.removeItem("nb_user_role");
-        localStorage.removeItem("nb_user");
+  const clearLocalAuth = () => {
+    localStorage.removeItem("nb_user_role");
+    localStorage.removeItem("nb_user");
+  };
+
+  const renderAuthenticatedHeader = (user) => {
+    if (!authLink || !user) return;
+    const dashboardUrl = user.role === "admin" ? "admin/" : "student/";
+    const group = document.createElement("div");
+    group.className = "flex items-center gap-4";
+
+    const dashboard = document.createElement("a");
+    dashboard.href = dashboardUrl;
+    dashboard.className = authLink.className;
+    dashboard.textContent = "แดชบอร์ด";
+
+    const logout = document.createElement("button");
+    logout.type = "button";
+    logout.className = "text-[#a0aabf] hover:text-white text-[13px] font-bold";
+    logout.textContent = "ออกจากระบบ";
+    logout.addEventListener("click", async () => {
+      logout.disabled = true;
+      try {
+        await fetch("auth-api", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "logout" })
+        });
+      } finally {
+        clearLocalAuth();
         window.location.href = "index.php";
-      });
-      group.append(scores, logout);
-      authLink.replaceWith(group);
-      if (mobileAuthLink) {
-        mobileAuthLink.href = "placement-test.php?view=history#test-workspace";
-        mobileAuthLink.textContent = "คะแนนของฉัน";
       }
+    });
+
+    group.append(dashboard, logout);
+    authLink.replaceWith(group);
+    if (mobileAuthLink) {
+      mobileAuthLink.href = dashboardUrl;
+      mobileAuthLink.textContent = "แดชบอร์ด";
     }
-  }
+  };
+
+  window.nbAuthReady = fetch("auth-api", {
+    method: "GET",
+    credentials: "same-origin",
+    headers: { Accept: "application/json" },
+    cache: "no-store"
+  })
+    .then(response => response.ok ? response.json() : Promise.reject(new Error("Auth status unavailable")))
+    .then(status => {
+      if (!status.authenticated || !status.user) {
+        clearLocalAuth();
+        return null;
+      }
+      localStorage.setItem("nb_user_role", status.user.role);
+      localStorage.setItem("nb_user", JSON.stringify(status.user));
+      renderAuthenticatedHeader(status.user);
+      return status.user;
+    })
+    .catch(() => {
+      let cachedUser = null;
+      try { cachedUser = JSON.parse(localStorage.getItem("nb_user")); } catch { cachedUser = null; }
+      if (cachedUser && ["student", "admin"].includes(cachedUser.role)) renderAuthenticatedHeader(cachedUser);
+      return cachedUser;
+    });
 
   const toast = document.querySelector("[data-toast]");
   window.showToast = (message) => {

@@ -49,9 +49,27 @@ try {
     ensureAuthSchema($pdo);
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
         $adminCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1")->fetchColumn();
+        $sessionUser = null;
+        if (!empty($_SESSION['user_id'])) {
+            $sessionStmt = $pdo->prepare('SELECT id, email, first_name, last_name, role, is_active FROM users WHERE id = :id LIMIT 1');
+            $sessionStmt->execute([':id' => (int) $_SESSION['user_id']]);
+            $user = $sessionStmt->fetch();
+            if ($user && $user['is_active']) {
+                $_SESSION['user_role'] = (string) $user['role'];
+                $sessionUser = [
+                    'id' => (int) $user['id'],
+                    'email' => (string) $user['email'],
+                    'name' => trim((string) $user['first_name'] . ' ' . (string) $user['last_name']),
+                    'role' => (string) $user['role'],
+                ];
+            } else {
+                unset($_SESSION['user_id'], $_SESSION['user_role']);
+            }
+        }
         authRespond([
-            'authenticated' => !empty($_SESSION['user_id']),
-            'role' => $_SESSION['user_role'] ?? null,
+            'authenticated' => $sessionUser !== null,
+            'role' => $sessionUser['role'] ?? null,
+            'user' => $sessionUser,
             'adminConfigured' => $adminCount > 0,
         ]);
     }
