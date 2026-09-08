@@ -79,7 +79,7 @@ function testScoreMeta(float $score): array
             <h2 class="text-[28px] font-bold text-navy-950">ผลการทดสอบของฉัน</h2>
             <p class="mt-2 text-[14px] text-[#65738a]">ตรวจคะแนน ดูเฉลย และเลือกหัวข้อที่ควรกลับไปทบทวน</p>
           </div>
-          <a href="tests" class="h-10 px-5 inline-flex items-center rounded-lg bg-navy-950 text-white text-[13px] font-bold hover:bg-[#17304f]">เลือกแบบทดสอบ</a>
+          <a href="tests" class="h-10 px-5 inline-flex items-center rounded-lg bg-pink-500 text-white text-[13px] font-bold hover:bg-pink-600">เลือกแบบทดสอบ</a>
         </div>
       </section>
 
@@ -188,7 +188,7 @@ function testScoreMeta(float $score): array
                   <span class="test-score-badge <?= $meta['class'] ?>"><?= $meta['label'] ?></span>
                 </div>
                 <div class="mt-4 flex gap-2">
-                  <a href="test-result?id=<?= (int) $attempt['id'] ?>" class="h-9 flex-1 inline-flex items-center justify-center rounded-lg bg-navy-950 text-white text-[12px] font-bold">ดูผลและเฉลย</a>
+                  <a href="test-result?id=<?= (int) $attempt['id'] ?>" class="h-9 flex-1 inline-flex items-center justify-center rounded-lg bg-pink-500 text-white text-[12px] font-bold">ดูผลและเฉลย</a>
                   <a href="take-test?id=<?= (int) $attempt['exam_id'] ?>" class="h-9 px-4 inline-flex items-center justify-center rounded-lg border border-[#cfd7e2] text-[12px] font-bold">ทำอีกครั้ง</a>
                 </div>
               </article>

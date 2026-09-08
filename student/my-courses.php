@@ -49,7 +49,7 @@ $statusLabels = ['active' => 'กำลังเรียน', 'completed' => '�
             <h2 class="text-[28px] font-bold text-navy-950">คอร์สของฉัน</h2>
             <p class="mt-2 text-[14px] text-[#65738a]">กลับมาเรียนต่อจากบทล่าสุดและติดตามความก้าวหน้าของคุณ</p>
           </div>
-          <a href="../courses" class="h-10 px-5 inline-flex items-center rounded-lg bg-navy-950 text-white text-[13px] font-bold hover:bg-[#17304f]">ค้นหาคอร์สเพิ่มเติม</a>
+          <a href="../courses" class="h-10 px-5 inline-flex items-center rounded-lg bg-pink-500 text-white text-[13px] font-bold hover:bg-pink-600">ค้นหาคอร์สเพิ่มเติม</a>
         </div>
       </section>
 

@@ -52,7 +52,7 @@ function learningStepTitle($step): string
             <h2 class="text-[28px] font-bold text-navy-950">แผนการเรียนของฉัน</h2>
             <p class="mt-2 text-[14px] text-[#65738a]">ดูเป้าหมาย ลำดับการเรียน และความก้าวหน้าทั้งหมดในที่เดียว</p>
           </div>
-          <a href="../courses" class="h-10 px-5 inline-flex items-center rounded-lg bg-navy-950 text-white text-[13px] font-bold hover:bg-[#17304f]">เลือกคอร์สเรียน</a>
+          <a href="../courses" class="h-10 px-5 inline-flex items-center rounded-lg bg-pink-500 text-white text-[13px] font-bold hover:bg-pink-600">เลือกคอร์สเรียน</a>
         </div>
       </section>
 
