@@ -27,5 +27,10 @@
 .student-section-title::before { content:""; width:3px; height:18px; background:var(--student-pink); border-radius:2px; }
 .learning-empty-grid { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr); gap:20px; align-items:stretch; }
 .learning-empty-grid > section,.learning-empty-grid > aside { min-width:0; }
+.test-score-badge { display:inline-flex; align-items:center; min-height:24px; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
+.test-score-badge.score-good { color:#166534; background:#ecfdf3; border:1px solid #bbf7d0; }
+.test-score-badge.score-pass { color:#1d4ed8; background:#eff6ff; border:1px solid #bfdbfe; }
+.test-score-badge.score-review { color:#b42318; background:#fff1f0; border:1px solid #fecaca; }
+@media (max-width:720px) { .my-tests-desktop { display:none; } .my-tests-mobile { display:block !important; } }
 @media (max-width:900px) { .learning-empty-grid { grid-template-columns:minmax(0,1fr); } }
 @media (max-width:960px) { #studentSidebar { box-shadow:12px 0 30px rgba(5,19,40,.22) !important; } }
