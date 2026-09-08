@@ -26,7 +26,27 @@ function authBody(): array
     return is_array($data) ? $data : [];
 }
 
+function ensureAuthSchema(PDO $pdo): void
+{
+    $columns = [];
+    foreach ($pdo->query('SHOW COLUMNS FROM users')->fetchAll() as $column) {
+        $columns[(string) $column['Field']] = true;
+    }
+    $additions = [
+        'phone' => 'ADD COLUMN `phone` VARCHAR(20) NULL AFTER `last_name`',
+        'avatar_url' => 'ADD COLUMN `avatar_url` VARCHAR(500) NULL AFTER `role`',
+        'pdpa_consent' => 'ADD COLUMN `pdpa_consent` TINYINT(1) NOT NULL DEFAULT 0 AFTER `avatar_url`',
+        'pdpa_consent_at' => 'ADD COLUMN `pdpa_consent_at` DATETIME NULL AFTER `pdpa_consent`',
+    ];
+    foreach ($additions as $name => $definition) {
+        if (!isset($columns[$name])) {
+            $pdo->exec("ALTER TABLE `users` {$definition}");
+        }
+    }
+}
+
 try {
+    ensureAuthSchema($pdo);
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
         $adminCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1")->fetchColumn();
         authRespond([
