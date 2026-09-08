@@ -4,6 +4,7 @@ module.exports = {
     "./*.{php,html}",
     "./includes/**/*.{php,html}",
     "./admin/**/*.{php,html}",
+    "./student/**/*.{php,html}",
     "./assets/js/**/*.js"
   ],
   theme: {
