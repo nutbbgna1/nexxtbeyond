@@ -11,6 +11,12 @@ let answers      = {};
 let isRevealed   = false;
 let _serverKeyConfigured = false;   // true หากมี key ใน DB แล้ว
 
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    })[char]);
+}
+
 // ---------- Settings API (server-side) ----------
 const SETTINGS_API = '../admin/ai-settings-api';
 
@@ -159,6 +165,13 @@ function updateTotal() {
 async function handleGenerate(e) {
     e.preventDefault();
 
+    const subject = document.getElementById('examSubject').value.trim();
+    if (!subject) {
+        alert('กรุณาเลือกวิชาเรียน');
+        document.getElementById('examSubject').focus();
+        return;
+    }
+
     // ตรวจสอบว่ามี API Key ใน server ไหม
     const status = await loadSettingsStatus();
     if (!status.configured) {
@@ -232,8 +245,8 @@ async function handleGenerate(e) {
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({
                     questions:      currentExam,
-                    title:          `แบบทดสอบจาก AI ${new Date().toLocaleDateString('th-TH')}`,
-                    subject:        'ทั่วไป',
+                    title:          `แบบทดสอบ${subject}จาก AI ${new Date().toLocaleDateString('th-TH')}`,
+                    subject:        subject,
                     grade:          'ทุกระดับ',
                     generationMode: type,
                     sourceUrl:      driveUrl,
@@ -253,6 +266,7 @@ async function handleGenerate(e) {
         // fallback: แสดงผลใน session (กรณีบันทึก DB ไม่สำเร็จ)
         document.getElementById('exam-meta').innerHTML = `
             <span class="bg-pink-50 text-pink-600 font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide uppercase">ประเภท: ${type}</span>
+            <span class="bg-blue-50 text-blue-700 font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide">วิชา: ${escapeHtml(subject)}</span>
             <span class="bg-[#f4f7fb] text-[#65738a] font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide">จำนวน: ${currentExam.length} ข้อ</span>
         `;
 

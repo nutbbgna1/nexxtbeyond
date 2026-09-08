@@ -3,6 +3,23 @@
  * AI-EXAM/index.php — Fragment สำหรับ include ใน admin/ai-exam.php
  */
 $apiPath = '../AI-EXAM/api.php';
+$defaultExamSubjects = ['คณิตศาสตร์', 'วิทยาศาสตร์', 'ภาษาอังกฤษ', 'ภาษาไทย', 'สังคมศึกษา'];
+$examSubjects = $defaultExamSubjects;
+try {
+    $subjectRows = $pdo->query(
+        "SELECT DISTINCT subject FROM (
+            SELECT subject FROM courses WHERE subject IS NOT NULL AND TRIM(subject) <> ''
+            UNION
+            SELECT subject FROM exams WHERE subject IS NOT NULL AND TRIM(subject) <> ''
+        ) available_subjects ORDER BY subject"
+    )->fetchAll(PDO::FETCH_COLUMN);
+    $examSubjects = array_values(array_unique(array_merge(
+        $defaultExamSubjects,
+        array_filter(array_map('trim', $subjectRows))
+    )));
+} catch (Throwable $error) {
+    error_log('AI exam subjects: ' . $error->getMessage());
+}
 ?>
 
 <style>
@@ -36,6 +53,20 @@ $apiPath = '../AI-EXAM/api.php';
     </div>
 
     <form id="generate-form" class="space-y-5" onsubmit="handleGenerate(event)">
+        <!-- Subject -->
+        <div class="relative">
+            <label for="examSubject" class="absolute -top-2 left-3 bg-white px-1 text-xs text-pink-500 font-bold z-10">วิชาเรียน *</label>
+            <select id="examSubject" required class="w-full p-3 border-2 border-[#e8ecf2] focus:border-pink-500 rounded-xl outline-none appearance-none bg-white text-navy-950 font-medium transition-colors cursor-pointer">
+                <option value="">เลือกวิชาเรียน</option>
+                <?php foreach ($examSubjects as $subject): ?>
+                    <option value="<?= htmlspecialchars($subject, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($subject, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#65738a]">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+            </div>
+        </div>
+
         <!-- Exam Type -->
         <div class="relative">
             <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-pink-500 font-bold z-10">ประเภทการสร้าง</label>
