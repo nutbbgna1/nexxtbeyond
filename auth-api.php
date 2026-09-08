@@ -28,7 +28,12 @@ function authBody(): array
 
 try {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
-        authRespond(['authenticated' => !empty($_SESSION['user_id'])]);
+        $adminCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1")->fetchColumn();
+        authRespond([
+            'authenticated' => !empty($_SESSION['user_id']),
+            'role' => $_SESSION['user_role'] ?? null,
+            'adminConfigured' => $adminCount > 0,
+        ]);
     }
 
     $data = authBody();
@@ -40,8 +45,13 @@ try {
         if ($identity === '' || $password === '') {
             authRespond(['error' => 'กรุณากรอกอีเมลหรือเบอร์โทรศัพท์และรหัสผ่าน'], 422);
         }
-        $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity OR phone = :identity LIMIT 1');
-        $stmt->execute([':identity' => strtolower($identity)]);
+        if (strtolower($identity) === 'admin') {
+            $stmt = $pdo->prepare("SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE role = 'admin' AND is_active = 1 ORDER BY id LIMIT 1");
+            $stmt->execute();
+        } else {
+            $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity OR phone = :identity LIMIT 1');
+            $stmt->execute([':identity' => strtolower($identity)]);
+        }
         $user = $stmt->fetch();
         if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {
             authRespond(['error' => 'ไม่พบบัญชีหรือรหัสผ่านไม่ถูกต้อง'], 401);

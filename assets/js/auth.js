@@ -202,23 +202,22 @@
         return;
       }
       
-      if (email === "admin" || email === "admin@nextbeyond.edu" || email === "admin@nextbeyond.com") {
-        localStorage.setItem("nb_user_role", "admin");
-        window.location.href = "admin/";
-      } else {
-        try {
-          loginBtn.disabled = true;
-          const result = await callAuthApi({ action: 'login', identity: email, password });
-          localStorage.setItem("nb_user_role", result.user.role);
-          localStorage.setItem("nb_user", JSON.stringify(result.user));
-          const params = new URLSearchParams(window.location.search);
-          const returnTo = params.get("redirect") || params.get("returnTo");
-          window.location.href = returnTo && !returnTo.includes(":") && !returnTo.startsWith("//") ? returnTo : "student/";
-        } catch (error) {
-          alert(error.message);
-        } finally {
-          loginBtn.disabled = false;
+      try {
+        loginBtn.disabled = true;
+        const result = await callAuthApi({ action: 'login', identity: email, password });
+        localStorage.setItem('nb_user_role', result.user.role);
+        localStorage.setItem('nb_user', JSON.stringify(result.user));
+        const params = new URLSearchParams(window.location.search);
+        const returnTo = params.get('redirect') || params.get('returnTo');
+        if (returnTo && !returnTo.includes(':') && !returnTo.startsWith('//')) {
+          window.location.href = returnTo;
+        } else {
+          window.location.href = result.user.role === 'admin' ? 'admin/' : 'student/';
         }
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        loginBtn.disabled = false;
       }
     });
   }

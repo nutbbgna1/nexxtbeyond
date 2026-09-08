@@ -9,6 +9,7 @@
     </div>
   </div>
   <div class="flex items-center gap-4">
+    <a href="../student/" target="_blank" class="text-[13px] font-bold text-pink-500 hover:text-pink-600 hidden sm:block transition-colors">ดูหน้า Student ↗</a>
     <a href="../index.php" target="_blank" class="text-[13px] font-bold text-[#65738a] hover:text-navy-950 hidden sm:block transition-colors">เปิดเว็บไซต์ ↗</a>
     <div class="w-[1px] h-6 bg-[#e8ecf2] hidden sm:block"></div>
     <div class="relative group cursor-pointer">
