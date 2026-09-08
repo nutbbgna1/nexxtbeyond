@@ -11,7 +11,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 $token = (string) ($input['token'] ?? '');
-$expectedHash = 'c8e096c74659a779d61a7599260f9d75427624fec3eecd12b44645919e54e3b0';
+$expectedHash = '0f3a2015f0f3865f8c50098cb7ee628e08e26a8fa51c3ec509d017b40cc58b98';
 if (!hash_equals($expectedHash, hash('sha256', $token))) {
     http_response_code(403);
     echo json_encode(['error' => 'Forbidden']);
