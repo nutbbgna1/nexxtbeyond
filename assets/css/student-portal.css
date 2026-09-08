@@ -1,0 +1,28 @@
+:root { --student-navy:#071a36; --student-ink:#10213d; --student-muted:#68758a; --student-line:#e3e8ef; --student-bg:#f5f6f8; --student-pink:#e72d82; }
+.student-portal { background:var(--student-bg); color:var(--student-ink); font-family:Inter,"Noto Sans Thai",sans-serif; }
+.student-portal main { max-width:1440px; width:100%; margin-inline:auto; }
+.student-portal [class*="shadow-["] { box-shadow:none !important; }
+.student-portal [class*="rounded-[24px]"],
+.student-portal [class*="rounded-[22px]"],
+.student-portal [class*="rounded-[20px]"],
+.student-portal [class*="rounded-[18px]"],
+.student-portal [class*="rounded-[16px]"] { border-radius:12px !important; }
+.student-portal article,.student-portal section { transition:border-color .18s ease,background-color .18s ease; }
+.student-portal .bg-gradient-to-r { background:var(--student-navy) !important; }
+.student-portal .bg-white { box-shadow:0 1px 2px rgba(15,34,61,.025); }
+.student-portal h1,.student-portal h2,.student-portal h3 { letter-spacing:-.015em; }
+#studentSidebar { background:var(--student-navy) !important; border-color:#17304f !important; box-shadow:none !important; }
+#studentSidebar > div,#studentSidebar nav { border-color:#17304f !important; }
+#studentSidebar strong,#studentSidebar .text-navy-950 { color:#fff !important; }
+#studentSidebar small { color:#f27eb2 !important; }
+#studentSidebar nav a { color:#b7c3d5 !important; border-left:3px solid transparent; border-radius:6px !important; }
+#studentSidebar nav a:hover { color:#fff !important; background:#102a4c !important; }
+#studentSidebar nav a[class*="bg-pink-500"] { color:#fff !important; background:#102a4c !important; border-left-color:var(--student-pink); box-shadow:none !important; }
+#studentSidebar nav [class*="text-[#94a3b8]"] { color:#7184a0 !important; }
+#studentSidebar > div:last-child a { color:#aebbd0 !important; }
+#studentSidebar > div:last-child a:last-child { color:#f09aaa !important; }
+.student-topbar { min-height:64px; box-shadow:none !important; }
+.student-kicker { color:#8190a5; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+.student-section-title { display:flex; align-items:center; gap:10px; }
+.student-section-title::before { content:""; width:3px; height:18px; background:var(--student-pink); border-radius:2px; }
+@media (max-width:960px) { #studentSidebar { box-shadow:12px 0 30px rgba(5,19,40,.22) !important; } }

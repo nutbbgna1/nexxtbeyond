@@ -4,7 +4,7 @@
  */
 $pageTitle = $pageTitle ?? 'Student Dashboard';
 ?>
-<header class="sticky top-0 z-30 bg-white border-b border-[#e8ecf2] shadow-[0_2px_8px_rgba(15,42,83,0.04)]">
+<header class="student-topbar sticky top-0 z-30 bg-white border-b border-[#e8ecf2]">
   <div class="flex items-center h-[60px] px-6 gap-4">
     <!-- Mobile hamburger -->
     <button id="sidebarToggle" class="hidden max-[960px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" aria-label="เปิดเมนู">

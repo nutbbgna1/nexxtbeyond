@@ -67,9 +67,10 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($pageTitle) ?> - Next Beyond Academy</title>
   <link rel="stylesheet" href="../assets/css/output.css">
+  <link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased">
+<body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
 
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
@@ -80,18 +81,19 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
     <main class="flex-1 p-8 max-[640px]:p-4">
 
       <!-- Welcome Banner -->
-      <div class="mb-8 rounded-[24px] bg-gradient-to-r from-navy-950 to-[#1a3a6e] p-7 text-white relative overflow-hidden">
-        <div class="absolute right-0 top-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-        <div class="absolute right-20 bottom-0 w-40 h-40 rounded-full bg-pink-500/10 translate-y-1/2 pointer-events-none"></div>
-        <div class="relative z-10">
-          <p class="text-pink-300 text-[13px] font-bold mb-1">ยินดีต้อนรับกลับ 👋</p>
-          <h2 class="text-[26px] font-black mb-3"><?= htmlspecialchars($displayName) ?></h2>
+      <div class="mb-8 rounded-xl bg-navy-950 p-7 text-white border border-[#17304f]">
+        <div class="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+          <p class="student-kicker text-[#b9c5d7] mb-2">Student overview</p>
+          <h2 class="text-[26px] font-bold mb-1"><?= htmlspecialchars($displayName) ?></h2>
+          <p class="text-[13px] text-[#b9c5d7]">ติดตามบทเรียน ข้อสอบ และความก้าวหน้าของคุณ</p>
+          </div>
           <div class="flex flex-wrap gap-3">
             <a href="tests.php" class="inline-flex items-center gap-2 px-5 py-2.5 bg-pink-500 rounded-xl font-bold text-[14px] hover:bg-pink-600 transition-colors shadow-[0_4px_14px_rgba(231,45,130,0.4)]">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               ทำข้อสอบ
             </a>
-            <a href="my-courses.php" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 border border-white/20 rounded-xl font-bold text-[14px] hover:bg-white/20 transition-colors">
+            <a href="my-courses.php" class="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent border border-[#53647d] rounded-lg font-bold text-[14px] hover:bg-white/10 transition-colors">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
               คอร์สของฉัน
             </a>

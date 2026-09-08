@@ -38,9 +38,10 @@ foreach ($stmtDone->fetchAll() as $row) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($pageTitle) ?> - Next Beyond Academy</title>
   <link rel="stylesheet" href="../assets/css/output.css">
+  <link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased">
+<body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
   <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
