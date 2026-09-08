@@ -1,28 +1,130 @@
-// State
-let currentExam = null;
-let answers = {};
-let isRevealed = false;
+// ============================================================
+//  admin-ai-exam.js  — ใช้ Server-side API Key (ไม่ใช้ localStorage)
+//  Key ถูกเข้ารหัส AES-256 และเก็บใน DB ผ่าน /admin/ai-settings-api.php
+// ============================================================
 
-async function readApiResponse(response) {
-    const raw = await response.text();
-    if (!raw) return {};
+"use strict";
 
+// ---------- State ----------
+let currentExam  = null;
+let answers      = {};
+let isRevealed   = false;
+let _serverKeyConfigured = false;   // true หากมี key ใน DB แล้ว
+
+// ---------- Settings API (server-side) ----------
+const SETTINGS_API = '/admin/ai-settings-api.php';
+
+async function loadSettingsStatus() {
     try {
-        return JSON.parse(raw);
-    } catch {
-        throw new Error(response.ok
-            ? 'เซิร์ฟเวอร์ตอบข้อมูลไม่ถูกต้อง'
-            : `เซิร์ฟเวอร์ขัดข้อง (${response.status})`);
+        const res  = await fetch(SETTINGS_API, { cache: 'no-store' });
+        const data = await res.json();
+        _serverKeyConfigured = !!data.configured;
+        return data;          // { configured: bool, maskedKey: string|null }
+    } catch (e) {
+        _serverKeyConfigured = false;
+        return { configured: false, maskedKey: null };
     }
 }
 
-// View Routing
+// ---------- Settings Modal ----------
+async function openSettings() {
+    const modal      = document.getElementById('settings-modal');
+    const statusDiv  = document.getElementById('api-key-status');
+    const input      = document.getElementById('api-key-input');
+
+    // Reset input
+    input.value       = '';
+    input.placeholder = 'AIzaSy...';
+    statusDiv.classList.add('hidden');
+    statusDiv.textContent = '';
+
+    modal.classList.remove('hidden');
+
+    // โหลดสถานะจาก server
+    const status = await loadSettingsStatus();
+    if (status.configured && status.maskedKey) {
+        statusDiv.className = 'mb-3 rounded-xl border px-3 py-2.5 text-[13px] font-bold flex items-center gap-2 bg-[#f0fdf4] border-[#bbf7d0] text-[#15803d]';
+        statusDiv.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            บันทึกในฐานข้อมูลแล้ว (${status.maskedKey})
+        `;
+        statusDiv.classList.remove('hidden');
+        input.placeholder = 'กรอกเฉพาะเมื่อต้องการเปลี่ยน API Key';
+    }
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').classList.add('hidden');
+}
+
+async function saveSettings() {
+    const input   = document.getElementById('api-key-input');
+    const key     = input.value.trim();
+    const saveBtn = document.querySelector('#settings-modal button[onclick="saveSettings()"]');
+
+    if (!key) {
+        // ถ้าไม่ได้กรอกอะไรและมี key อยู่แล้ว → ปิด modal เฉยๆ
+        if (_serverKeyConfigured) { closeSettings(); return; }
+        alert('กรุณากรอก Gemini API Key ก่อนบันทึก');
+        return;
+    }
+
+    // UI: loading state
+    const oldText = saveBtn.textContent;
+    saveBtn.disabled    = true;
+    saveBtn.textContent = 'กำลังบันทึก...';
+
+    try {
+        const res  = await fetch(SETTINGS_API, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ apiKey: key }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+
+        _serverKeyConfigured = true;
+        input.value          = '';
+        closeSettings();
+
+        // อัปเดต badge ปุ่ม settings
+        updateSettingsBadge(true);
+
+    } catch (err) {
+        alert('❌ ' + err.message);
+    } finally {
+        saveBtn.disabled    = false;
+        saveBtn.textContent = oldText;
+    }
+}
+
+// อัปเดต badge สถานะบนปุ่ม "ตั้งค่า API Key"
+function updateSettingsBadge(configured) {
+    const btn = document.getElementById('settings-btn');
+    if (!btn) return;
+    const badge = btn.querySelector('#settings-badge');
+    if (configured) {
+        if (!badge) {
+            const b = document.createElement('span');
+            b.id        = 'settings-badge';
+            b.className = 'w-2 h-2 rounded-full bg-[#22c55e] inline-block';
+            btn.prepend(b);
+        }
+    } else {
+        if (badge) badge.remove();
+    }
+}
+
+// ---------- View Routing ----------
 function goHome() {
     document.getElementById('view-form').classList.remove('hidden');
     document.getElementById('view-exam').classList.add('hidden');
     currentExam = null;
-    answers = {};
-    isRevealed = false;
+    answers     = {};
+    isRevealed  = false;
 }
 
 function toggleType() {
@@ -37,78 +139,45 @@ function toggleType() {
 }
 
 function updateTotal() {
-    const e = parseInt(document.getElementById('lvl-easy').value) || 0;
-    const m = parseInt(document.getElementById('lvl-medium').value) || 0;
-    const h = parseInt(document.getElementById('lvl-hard').value) || 0;
+    const e  = parseInt(document.getElementById('lvl-easy').value)   || 0;
+    const m  = parseInt(document.getElementById('lvl-medium').value) || 0;
+    const h  = parseInt(document.getElementById('lvl-hard').value)   || 0;
     const ex = parseInt(document.getElementById('lvl-expert').value) || 0;
     document.getElementById('total-levels').innerText = e + m + h + ex;
 }
 
-// Settings
-async function openSettings() {
-    document.getElementById('api-key-input').value = '';
-    document.getElementById('api-key-input').placeholder = 'กำลังตรวจสอบ...';
-    const status = document.getElementById('api-key-status');
-    status.className = 'hidden mb-3 rounded-xl border px-3 py-2.5 text-[13px] font-bold';
-    document.getElementById('settings-modal').classList.remove('hidden');
-    try {
-        const response = await fetch('ai-settings-api');
-        const data = await readApiResponse(response);
-        if (!response.ok) throw new Error(data.error || 'ตรวจสอบการตั้งค่าไม่ได้');
-        if (data.configured) {
-            status.textContent = `✓ บันทึกในฐานข้อมูลแล้ว (${data.maskedKey || 'ปิดบังข้อมูล'})`;
-            status.className = 'mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] font-bold text-emerald-700';
-            document.getElementById('api-key-input').placeholder = 'กรอกเฉพาะเมื่อต้องการเปลี่ยน API Key';
-        } else {
-            status.textContent = 'ยังไม่ได้บันทึก API Key ในฐานข้อมูล';
-            status.className = 'mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] font-bold text-amber-700';
-            document.getElementById('api-key-input').placeholder = 'AIzaSy...';
-        }
-    } catch (error) {
-        status.textContent = error.message || 'ตรวจสอบการตั้งค่าไม่ได้';
-        status.className = 'mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] font-bold text-red-700';
-        document.getElementById('api-key-input').placeholder = 'ตรวจสอบการตั้งค่าไม่ได้';
-    }
-}
-
-function closeSettings() {
-    document.getElementById('settings-modal').classList.add('hidden');
-}
-
-async function saveSettings() {
-    const key = document.getElementById('api-key-input').value.trim();
-    if (!key) return alert('กรุณากรอก API Key');
-    try {
-        const response = await fetch('ai-settings-api', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:key})});
-        const data = await readApiResponse(response);
-        if(!response.ok) throw new Error(data.error||'บันทึกไม่สำเร็จ');
-        localStorage.removeItem('gemini_api_key'); closeSettings(); alert('บันทึก API Key ลงฐานข้อมูลแล้ว');
-    } catch(error) { alert(error.message); }
-}
-
-// Form Submit
+// ---------- Form Submit — Generate ----------
 async function handleGenerate(e) {
     e.preventDefault();
+
+    // ตรวจสอบว่ามี API Key ใน server ไหม
+    const status = await loadSettingsStatus();
+    if (!status.configured) {
+        alert('กรุณาตั้งค่า Gemini API Key ในเมนูตั้งค่า (ไอคอนฟันเฟือง) ก่อนเริ่มสร้างข้อสอบ');
+        openSettings();
+        return;
+    }
+
     const driveUrl = document.getElementById('driveUrl').value.trim();
     if (!driveUrl) {
-        alert("กรุณาใส่ลิงก์ Google Drive (ต้องตั้งค่าการแชร์เป็น Anyone with the link)");
+        alert('กรุณาใส่ลิงก์ Google Drive (ต้องตั้งค่าการแชร์เป็น Anyone with the link)');
         return;
     }
 
     const type = document.getElementById('examType').value;
     let finalCount = parseInt(document.getElementById('qCount').value) || 10;
-    let countsObj = null;
+    let countsObj  = null;
 
     if (type === 'levels') {
         countsObj = {
-            easy: parseInt(document.getElementById('lvl-easy').value) || 0,
+            easy:   parseInt(document.getElementById('lvl-easy').value)   || 0,
             medium: parseInt(document.getElementById('lvl-medium').value) || 0,
-            hard: parseInt(document.getElementById('lvl-hard').value) || 0,
+            hard:   parseInt(document.getElementById('lvl-hard').value)   || 0,
             expert: parseInt(document.getElementById('lvl-expert').value) || 0,
         };
         finalCount = Object.values(countsObj).reduce((a, b) => a + b, 0);
         if (finalCount === 0) {
-            alert("กรุณาระบุจำนวนข้อสอบอย่างน้อย 1 ระดับ");
+            alert('กรุณาระบุจำนวนข้อสอบอย่างน้อย 1 ระดับ');
             return;
         }
     }
@@ -116,123 +185,101 @@ async function handleGenerate(e) {
     const details = document.getElementById('details').value;
     const shuffle = document.getElementById('shuffle').checked;
 
-    document.getElementById('loading-overlay').classList.remove('hidden');
-    document.getElementById('loading-overlay').classList.add('flex');
-    document.getElementById('btn-submit').disabled = true;
+    const overlay  = document.getElementById('loading-overlay');
+    const submitBtn = document.getElementById('btn-submit');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    submitBtn.disabled = true;
 
     try {
+        // ส่ง useServerKey: true → API จะดึง key จาก DB เอง
         const res = await fetch(API_URL, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                url: driveUrl,
-                type: type,
-                count: finalCount,
-                counts: countsObj,
-                details: details,
-                shuffle: shuffle,
-                apiKey: ''
-            })
+            body:    JSON.stringify({
+                url:          driveUrl,
+                type:         type,
+                count:        finalCount,
+                counts:       countsObj,
+                details:      details,
+                shuffle:      shuffle,
+                useServerKey: true,   // ← ใช้ key จาก server DB
+            }),
         });
 
-        const data = await readApiResponse(res);
+        const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
-        if (!data.questions || data.questions.length === 0) throw new Error('AI ไม่สามารถสร้างข้อสอบได้ โปรดตรวจสอบเอกสารต้นฉบับ');
+        if (!data.questions || data.questions.length === 0)
+            throw new Error('AI ไม่สามารถสร้างข้อสอบได้ โปรดตรวจสอบเอกสารต้นฉบับ');
 
         currentExam = data.questions;
-        answers = {};
-        isRevealed = false;
+        answers     = {};
+        isRevealed  = false;
 
-        const generatedExam = {
-            title: `แบบทดสอบจาก AI ${new Date().toLocaleDateString('th-TH')}`,
-            subject: 'ทั่วไป',
-            grade: 'ทุกระดับ',
-            topic: details,
-            generationMode: type,
-            sourceUrl: driveUrl,
-            questions: currentExam
-        };
-        const saveResponse = await fetch('exams-api', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(generatedExam)
-        });
-        const saveResult = await readApiResponse(saveResponse);
-        if (!saveResponse.ok) {
-            throw new Error(saveResult.error || 'ไม่สามารถบันทึกข้อสอบลงฐานข้อมูลได้');
-        }
-        const savedNotice = document.getElementById('exam-saved-notice');
-        if (savedNotice) {
-            savedNotice.textContent = `บันทึกข้อสอบ #${saveResult.examId} เรียบร้อยแล้ว กำลังเปิดคลังข้อสอบ...`;
-            savedNotice.classList.remove('hidden');
-        }
-        window.location.href = `tests.php?created=${encodeURIComponent(saveResult.examId)}`;
-        return;
-        
         document.getElementById('exam-meta').innerHTML = `
             <span class="bg-pink-50 text-pink-600 font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide uppercase">ประเภท: ${type}</span>
             <span class="bg-[#f4f7fb] text-[#65738a] font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide">จำนวน: ${currentExam.length} ข้อ</span>
         `;
-        
+
         renderExam();
-        
+
         document.getElementById('view-form').classList.add('hidden');
         document.getElementById('view-exam').classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-        alert("Error: " + error.message);
+        alert('Error: ' + error.message);
     } finally {
-        document.getElementById('loading-overlay').classList.add('hidden');
-        document.getElementById('loading-overlay').classList.remove('flex');
-        document.getElementById('btn-submit').disabled = false;
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        submitBtn.disabled = false;
     }
 }
 
-// Exam Rendering
+// ---------- Exam Rendering ----------
 function renderExam() {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
 
     currentExam.forEach((q, qIndex) => {
         const isCorrect = answers[qIndex] === q.correctAnswerIndex;
-        const qDiv = document.createElement('div');
-        qDiv.className = "bg-white rounded-[20px] shadow-[0_4px_24px_rgba(15,42,83,0.03)] border border-[#e8ecf2] p-6";
-        
+        const qDiv      = document.createElement('div');
+        qDiv.className  = 'bg-white rounded-[20px] shadow-[0_4px_24px_rgba(15,42,83,0.03)] border border-[#e8ecf2] p-6';
+
         let html = `<div class="text-[16px] font-bold text-navy-950 mb-5 whitespace-pre-wrap leading-relaxed"><span class="font-black mr-2 text-pink-500">ข้อ ${qIndex + 1}.</span>${q.questionText}</div><div class="space-y-3">`;
 
         q.options.forEach((opt, oIndex) => {
-            const isSelected = answers[qIndex] === oIndex;
+            const isSelected     = answers[qIndex] === oIndex;
             const isActualAnswer = q.correctAnswerIndex === oIndex;
-            
-            let optionClass = "flex items-center p-3.5 rounded-xl border-2 transition-all cursor-pointer ";
-            let markerClass = "w-5 h-5 rounded-full border-2 mr-3.5 flex items-center justify-center shrink-0 transition-colors ";
-            let markerInner = "";
+
+            let optClass    = 'flex items-center p-3.5 rounded-xl border-2 transition-all cursor-pointer ';
+            let markerClass = 'w-5 h-5 rounded-full border-2 mr-3.5 flex items-center justify-center shrink-0 transition-colors ';
+            let markerInner = '';
 
             if (!isRevealed) {
-                optionClass += isSelected ? "border-pink-500 bg-pink-50/50" : "border-[#e8ecf2] hover:border-pink-300 hover:bg-[#f8fafc]";
-                markerClass += isSelected ? "border-pink-500" : "border-[#cbd5e1]";
+                optClass    += isSelected ? 'border-pink-500 bg-pink-50/50' : 'border-[#e8ecf2] hover:border-pink-300 hover:bg-[#f8fafc]';
+                markerClass += isSelected ? 'border-pink-500' : 'border-[#cbd5e1]';
                 if (isSelected) markerInner = '<div class="w-2.5 h-2.5 bg-pink-500 rounded-full"></div>';
             } else {
-                optionClass += " cursor-default ";
+                optClass += ' cursor-default ';
                 if (isActualAnswer) {
-                    optionClass += "border-[#22c55e] bg-[#f0fdf4] text-[#166534] font-bold";
-                    markerClass += "border-[#22c55e] bg-[#22c55e] text-white";
-                    markerInner = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
+                    optClass    += 'border-[#22c55e] bg-[#f0fdf4] text-[#166534] font-bold';
+                    markerClass += 'border-[#22c55e] bg-[#22c55e] text-white';
+                    markerInner  = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
                 } else if (isSelected && !isCorrect) {
-                    optionClass += "border-[#ef4444] bg-[#fef2f2] text-[#b91c1c]";
-                    markerClass += "border-[#ef4444] bg-[#ef4444] text-white";
-                    markerInner = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+                    optClass    += 'border-[#ef4444] bg-[#fef2f2] text-[#b91c1c]';
+                    markerClass += 'border-[#ef4444] bg-[#ef4444] text-white';
+                    markerInner  = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
                 } else {
-                    optionClass += "border-[#e8ecf2] opacity-50";
-                    markerClass += "border-[#cbd5e1]";
+                    optClass    += 'border-[#e8ecf2] opacity-50';
+                    markerClass += 'border-[#cbd5e1]';
                 }
             }
 
-            html += `<div class="${optionClass}" onclick="selectOption(${qIndex}, ${oIndex})"><div class="${markerClass}">${markerInner}</div><span class="flex-1 text-[14px] font-medium leading-snug ${isRevealed && isActualAnswer ? 'text-[#166534]' : 'text-navy-950'}">${opt}</span></div>`;
+            html += `<div class="${optClass}" onclick="selectOption(${qIndex}, ${oIndex})"><div class="${markerClass}">${markerInner}</div><span class="flex-1 text-[14px] font-medium leading-snug ${isRevealed && isActualAnswer ? 'text-[#166534]' : 'text-navy-950'}">${opt}</span></div>`;
         });
 
-        html += `</div>`;
+        html += '</div>';
 
         if (isRevealed && q.explanation) {
             html += `
@@ -249,20 +296,17 @@ function renderExam() {
         container.appendChild(qDiv);
     });
 
-    // Hide/Show correct action buttons
+    // action buttons
     if (isRevealed) {
         document.getElementById('exam-actions').classList.add('hidden');
         document.getElementById('exam-actions').classList.remove('flex');
-        
         document.getElementById('exam-actions-done').classList.remove('hidden');
         document.getElementById('exam-actions-done').classList.add('flex');
     } else {
         document.getElementById('exam-actions').classList.remove('hidden');
         document.getElementById('exam-actions').classList.add('flex');
-        
         document.getElementById('exam-actions-done').classList.add('hidden');
         document.getElementById('exam-actions-done').classList.remove('flex');
-        
         document.getElementById('exam-result').classList.add('hidden');
         document.getElementById('exam-view-mode').classList.add('hidden');
     }
@@ -278,15 +322,12 @@ function submitExam() {
     if (Object.keys(answers).length < currentExam.length) {
         if (!confirm('คุณยังทำข้อสอบไม่ครบทุกข้อ ต้องการส่งคำตอบใช่หรือไม่?')) return;
     }
-    
     let correct = 0;
     currentExam.forEach((q, index) => {
         if (answers[index] === q.correctAnswerIndex) correct++;
     });
-
     document.getElementById('score-display').innerText = `${correct} / ${currentExam.length}`;
     document.getElementById('exam-result').classList.remove('hidden');
-    
     isRevealed = true;
     renderExam();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -294,65 +335,40 @@ function submitExam() {
 
 function showAnswersOnly() {
     if (!confirm('คุณต้องการเปิดดูเฉลยทั้งหมดโดยไม่บันทึกคะแนนใช่หรือไม่?')) return;
-    
     document.getElementById('exam-view-mode').classList.remove('hidden');
     isRevealed = true;
     renderExam();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function loadPdfLibrary() {
-    if (window.html2pdf) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector('script[data-html2pdf]');
-        if (existing) {
-            existing.addEventListener('load', resolve, { once: true });
-            existing.addEventListener('error', reject, { once: true });
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-        script.dataset.html2pdf = 'true';
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('โหลดระบบสร้าง PDF ไม่สำเร็จ'));
-        document.head.appendChild(script);
-    });
-}
-
-async function downloadPDF() {
-    try {
-        await loadPdfLibrary();
-    } catch (error) {
-        alert(error.message);
-        return;
-    }
-    const element = document.getElementById('view-exam');
-    const opt = {
-        margin:       10,
-        filename:     'AI_Exam_NextBeyond.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // Temporarily hide buttons and top-bar during capture
-    const examActions = document.getElementById('exam-actions');
+function downloadPDF() {
+    const element        = document.getElementById('view-exam');
+    const examActions    = document.getElementById('exam-actions');
     const examActionsDone = document.getElementById('exam-actions-done');
-    const backBtn = element.querySelector('button[onclick="goHome()"]');
-    
-    if (examActions) examActions.style.display = 'none';
+    const backBtn        = element.querySelector('button[onclick="goHome()"]');
+    const opt = {
+        margin:      10,
+        filename:    'AI_Exam_NextBeyond.pdf',
+        image:       { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+    if (examActions)    examActions.style.display    = 'none';
     if (examActionsDone) examActionsDone.style.display = 'none';
-    if (backBtn) backBtn.style.display = 'none';
-
-    // Show loading indicator or change button text
-    const oldTitle = document.title;
-    document.title = "Generating PDF...";
-
+    if (backBtn)        backBtn.style.display        = 'none';
+    const oldTitle  = document.title;
+    document.title  = 'Generating PDF...';
     html2pdf().set(opt).from(element).save().then(() => {
-        // Restore elements
-        if (examActions) examActions.style.display = '';
+        if (examActions)    examActions.style.display    = '';
         if (examActionsDone) examActionsDone.style.display = '';
-        if (backBtn) backBtn.style.display = '';
+        if (backBtn)        backBtn.style.display        = '';
         document.title = oldTitle;
     });
 }
+
+// ---------- Init: โหลดสถานะ Key เมื่อหน้าโหลด ----------
+(async () => {
+    const status = await loadSettingsStatus();
+    _serverKeyConfigured = status.configured;
+    updateSettingsBadge(status.configured);
+})();

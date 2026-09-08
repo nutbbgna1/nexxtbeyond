@@ -3,8 +3,6 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=UTF-8");
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/ai-settings.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -13,14 +11,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
-$apiKey = trim((string)($input['apiKey'] ?? ''));
-if ($apiKey === '') {
+// ── ดึง API Key: จาก Server DB หรือจาก request body (legacy) ──
+$useServerKey = !empty($input['useServerKey']);
+
+if ($useServerKey) {
+    // โหลด key จากฐานข้อมูล (เข้ารหัส AES-256 ใน system_settings)
+    require_once __DIR__ . '/../includes/db.php';
+    require_once __DIR__ . '/../includes/ai-settings.php';
     $apiKey = aiSettingsGetKey($pdo);
-}
-if ($apiKey === '') {
-    http_response_code(400);
-    echo json_encode(["error" => "ไม่พบ API Key"]);
-    exit();
+    if (empty($apiKey)) {
+        http_response_code(400);
+        echo json_encode(["error" => "ยังไม่ได้ตั้งค่า Gemini API Key กรุณาตั้งค่าในหน้า AI Exam → ตั้งค่า"]);
+        exit();
+    }
+} else {
+    // fallback: รับ apiKey จาก request (legacy mode)
+    if (!isset($input['apiKey']) || empty($input['apiKey'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "ไม่พบ API Key"]);
+        exit();
+    }
+    $apiKey = $input['apiKey'];
 }
 
 $url = $input['url'] ?? '';
