@@ -2,7 +2,8 @@
 $pageTitle = "เข้าสู่ระบบ / สมัครสมาชิก | Next Beyond Academy";
 $pageDesc = "เข้าสู่ระบบหรือสมัครบัญชีนักเรียนใหม่กับ Next Beyond Academy";
 $currentPage = 'auth.php';
-$extraHead = '<script defer src="assets/js/auth.js"></script>';
+$authScriptVersion = (string) filemtime(__DIR__ . '/assets/js/auth.js');
+$extraHead = '<script defer src="assets/js/auth.js?v=' . $authScriptVersion . '"></script>';
 include 'includes/head.php';
 include 'includes/header.php';
 ?>

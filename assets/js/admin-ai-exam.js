@@ -51,7 +51,11 @@ async function openSettings() {
             บันทึกในฐานข้อมูลแล้ว (${status.maskedKey})
         `;
         statusDiv.classList.remove('hidden');
-        input.placeholder = 'กรอกเฉพาะเมื่อต้องการเปลี่ยน API Key';
+        input.value = status.maskedKey;
+        input.dataset.maskedValue = status.maskedKey;
+        input.addEventListener('focus', () => {
+            if (input.value === input.dataset.maskedValue) input.value = '';
+        }, { once: true });
     }
 }
 
@@ -63,6 +67,11 @@ async function saveSettings() {
     const input   = document.getElementById('api-key-input');
     const key     = input.value.trim();
     const saveBtn = document.querySelector('#settings-modal button[onclick="saveSettings()"]');
+
+    if (key && key === input.dataset.maskedValue) {
+        closeSettings();
+        return;
+    }
 
     if (!key) {
         // ถ้าไม่ได้กรอกอะไรและมี key อยู่แล้ว → ปิด modal เฉยๆ

@@ -83,14 +83,15 @@
     });
   });
 
-  async function hashPassword(password) {
-    const bytes = new TextEncoder().encode(password);
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
-  }
-
-  function readUsers() {
-    try { return JSON.parse(localStorage.getItem("nb_users")) || []; } catch { return []; }
+  async function callAuthApi(payload) {
+    const response = await fetch('auth-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'ระบบบัญชีขัดข้อง กรุณาลองใหม่');
+    return data;
   }
 
   const registerBtn = root.querySelector('[data-goto="success"]');
@@ -116,26 +117,29 @@
       alert("กรุณายอมรับข้อกำหนดและความยินยอมที่จำเป็น");
       return;
     }
-    const users = readUsers();
-    if (users.some(user => user.email === email)) {
-      alert("อีเมลหรือเบอร์โทรศัพท์นี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ");
-      return;
+    try {
+      registerBtn.disabled = true;
+      const result = await callAuthApi({
+        action: 'register',
+        firstName: state.firstName,
+        lastName: state.lastName,
+        email,
+        phone: state.phone || state.parentPhone || '',
+        password: state.password,
+        parentName: `${state.parentFirstName || ''} ${state.parentLastName || ''}`.trim(),
+        parentPhone: state.parentPhone || '',
+        parentEmail: state.parentEmail || '',
+        relationship: state.relationship || ''
+      });
+      state.studentId = result.user.id;
+      localStorage.setItem("nb_user_role", "student");
+      localStorage.setItem("nb_user", JSON.stringify(result.user));
+      showStep("success");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      registerBtn.disabled = false;
     }
-    const user = {
-      id: `student_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      email,
-      name: `${state.firstName} ${state.lastName}`.trim(),
-      grade: state.grade || "",
-      role: "student",
-      passwordHash: await hashPassword(state.password),
-      createdAt: new Date().toISOString()
-    };
-    users.push(user);
-    state.studentId = user.id;
-    localStorage.setItem("nb_users", JSON.stringify(users));
-    localStorage.setItem("nb_user_role", "student");
-    localStorage.setItem("nb_user", JSON.stringify({ id: user.id, email: user.email, name: user.name, grade: user.grade }));
-    showStep("success");
   });
 
   // Chips
@@ -202,17 +206,19 @@
         localStorage.setItem("nb_user_role", "admin");
         window.location.href = "admin/";
       } else {
-        const normalizedEmail = email.toLowerCase();
-        const passwordHash = await hashPassword(password);
-        const account = readUsers().find(user => user.email === normalizedEmail && user.passwordHash === passwordHash && user.role === "student");
-        if (!account) {
-          alert("ไม่พบบัญชีหรือรหัสผ่านไม่ถูกต้อง");
-          return;
+        try {
+          loginBtn.disabled = true;
+          const result = await callAuthApi({ action: 'login', identity: email, password });
+          localStorage.setItem("nb_user_role", result.user.role);
+          localStorage.setItem("nb_user", JSON.stringify(result.user));
+          const params = new URLSearchParams(window.location.search);
+          const returnTo = params.get("redirect") || params.get("returnTo");
+          window.location.href = returnTo && !returnTo.includes(":") && !returnTo.startsWith("//") ? returnTo : "student/";
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          loginBtn.disabled = false;
         }
-        localStorage.setItem("nb_user_role", "student");
-        localStorage.setItem("nb_user", JSON.stringify({ id: account.id, email: account.email, name: account.name, grade: account.grade || "" }));
-        const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-        window.location.href = returnTo && !returnTo.includes(":") && !returnTo.startsWith("//") ? returnTo : "index.php";
       }
     });
   }

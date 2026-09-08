@@ -1,0 +1,121 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+require_once __DIR__ . '/includes/db.php';
+
+session_set_cookie_params([
+    'httponly' => true,
+    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'samesite' => 'Lax',
+    'path' => '/',
+]);
+session_start();
+
+function authRespond(array $data, int $status = 200): never
+{
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function authBody(): array
+{
+    $data = json_decode(file_get_contents('php://input'), true);
+    return is_array($data) ? $data : [];
+}
+
+try {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+        authRespond(['authenticated' => !empty($_SESSION['user_id'])]);
+    }
+
+    $data = authBody();
+    $action = (string) ($data['action'] ?? '');
+
+    if ($action === 'login') {
+        $identity = trim((string) ($data['identity'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        if ($identity === '' || $password === '') {
+            authRespond(['error' => 'กรุณากรอกอีเมลหรือเบอร์โทรศัพท์และรหัสผ่าน'], 422);
+        }
+        $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity OR phone = :identity LIMIT 1');
+        $stmt->execute([':identity' => strtolower($identity)]);
+        $user = $stmt->fetch();
+        if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {
+            authRespond(['error' => 'ไม่พบบัญชีหรือรหัสผ่านไม่ถูกต้อง'], 401);
+        }
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['user_role'] = (string) $user['role'];
+        authRespond(['success' => true, 'user' => [
+            'id' => (int) $user['id'],
+            'email' => $user['email'],
+            'name' => trim($user['first_name'] . ' ' . $user['last_name']),
+            'role' => $user['role'],
+        ]]);
+    }
+
+    if ($action === 'register') {
+        $firstName = trim((string) ($data['firstName'] ?? ''));
+        $lastName = trim((string) ($data['lastName'] ?? ''));
+        $email = strtolower(trim((string) ($data['email'] ?? '')));
+        $phone = trim((string) ($data['phone'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        if ($firstName === '' || $lastName === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            authRespond(['error' => 'กรุณากรอกชื่อ นามสกุล และอีเมลให้ถูกต้อง'], 422);
+        }
+        if (strlen($password) < 8) {
+            authRespond(['error' => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'], 422);
+        }
+        $check = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+        $check->execute([':email' => $email]);
+        if ($check->fetch()) {
+            authRespond(['error' => 'อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ'], 409);
+        }
+
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('INSERT INTO users (email, password_hash, first_name, last_name, phone, role, pdpa_consent, pdpa_consent_at, is_active) VALUES (:email, :password, :first_name, :last_name, :phone, \'student\', 1, NOW(), 1)');
+        $stmt->execute([
+            ':email' => $email,
+            ':password' => password_hash($password, PASSWORD_DEFAULT),
+            ':first_name' => $firstName,
+            ':last_name' => $lastName,
+            ':phone' => $phone ?: null,
+        ]);
+        $userId = (int) $pdo->lastInsertId();
+
+        $parentName = trim((string) ($data['parentName'] ?? ''));
+        $parentPhone = trim((string) ($data['parentPhone'] ?? ''));
+        if ($parentName !== '' || $parentPhone !== '') {
+            $parent = $pdo->prepare('INSERT INTO parent_info (user_id, parent_name, parent_phone, parent_email, relationship) VALUES (:user_id, :name, :phone, :email, :relationship)');
+            $parent->execute([
+                ':user_id' => $userId,
+                ':name' => $parentName ?: null,
+                ':phone' => $parentPhone ?: null,
+                ':email' => trim((string) ($data['parentEmail'] ?? '')) ?: null,
+                ':relationship' => trim((string) ($data['relationship'] ?? '')) ?: null,
+            ]);
+        }
+        $pdo->commit();
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['user_role'] = 'student';
+        authRespond(['success' => true, 'user' => ['id' => $userId, 'email' => $email, 'name' => $firstName . ' ' . $lastName, 'role' => 'student']], 201);
+    }
+
+    if ($action === 'logout') {
+        $_SESSION = [];
+        session_destroy();
+        authRespond(['success' => true]);
+    }
+
+    authRespond(['error' => 'คำสั่งไม่ถูกต้อง'], 400);
+} catch (Throwable $error) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('Auth API: ' . $error->getMessage());
+    authRespond(['error' => 'ระบบบัญชีขัดข้อง กรุณาลองใหม่'], 500);
+}
