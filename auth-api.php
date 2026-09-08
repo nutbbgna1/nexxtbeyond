@@ -69,9 +69,13 @@ try {
             $stmt = $pdo->prepare("SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE role = 'admin' AND is_active = 1 ORDER BY id LIMIT 1");
             $stmt->execute();
         } else {
-            $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :email OR phone = :phone LIMIT 1');
             $normalizedIdentity = strtolower($identity);
-            $stmt->execute([':email' => $normalizedIdentity, ':phone' => $normalizedIdentity]);
+            if (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
+                $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity LIMIT 1');
+            } else {
+                $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE phone = :identity LIMIT 1');
+            }
+            $stmt->execute([':identity' => $normalizedIdentity]);
         }
         $user = $stmt->fetch();
         if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {
