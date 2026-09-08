@@ -36,7 +36,7 @@ function learningStepTitle($step): string
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><?= htmlspecialchars($pageTitle) ?> - Next Beyond</title>
-  <link rel="stylesheet" href="../assets/css/output.css">
+  <link rel="stylesheet" href="../assets/css/output.css?v=<?= filemtime(__DIR__ . '/../assets/css/output.css') ?>">
   <link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>">
 </head>
 <body class="student-portal bg-[#f4f7fb] text-navy-950">
@@ -63,7 +63,7 @@ function learningStepTitle($step): string
       </div>
 
       <?php if (!$paths): ?>
-        <div class="grid grid-cols-[minmax(0,1.45fr)_minmax(280px,.55fr)] gap-5 max-[900px]:grid-cols-1">
+        <div class="learning-empty-grid">
           <section class="bg-white border border-[#dfe5ed] rounded-xl overflow-hidden">
             <div class="h-2 bg-pink-500"></div>
             <div class="px-10 py-12 max-[640px]:px-6 max-[640px]:py-9">
