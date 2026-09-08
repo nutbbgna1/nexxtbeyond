@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+includes/db.local.php
+
+# Runtime and editor files
+*.log
+tmp/
+.idea/
+.vscode/

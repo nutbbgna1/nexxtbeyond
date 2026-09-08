@@ -1,0 +1,43 @@
+RewriteEngine On
+
+# รองรับการแสดงผลไฟล์ SVG (เช่น Favicon) บนโฮสต์จริง
+AddType image/svg+xml .svg .svgz
+AddType image/webp .webp
+
+# Compress text responses when the hosting modules are available.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# Let browsers reuse static assets instead of downloading them on every page.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+</IfModule>
+
+# 0. Redirect URL เก่า admin-dashboard ไปยัง admin/ ใหม่ (รองรับทั้ง localhost และเว็บจริง)
+RewriteCond %{REQUEST_URI} ^(.*?)/admin-dashboard/?$ [NC]
+RewriteRule ^admin-dashboard/?$ %1/admin/ [R=301,L]
+
+# Redirect URL เก่ารูปแบบ admin-xxx ไปยัง admin/xxx
+RewriteCond %{REQUEST_URI} ^(.*?)/admin-([^/]+)/?$ [NC]
+RewriteRule ^admin-([^/]+)/?$ %1/admin/$1 [R=301,L]
+
+# 1. เปลี่ยนเส้นทาง (Redirect) index.php หรือ index ไปที่หน้าแรก (ไม่มีคำว่า index)
+RewriteCond %{THE_REQUEST} \s/+(.*?/)?index(\.php)?[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# 2. เปลี่ยนเส้นทาง (Redirect) URL ที่มี .php ตัวอื่นๆ ไปยัง URL ที่ไม่มี .php (ยกเว้น POST request เช่น API)
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# 3. ตรวจสอบว่าคำขอไม่ใช่โฟลเดอร์ และถ้าเติม .php แล้วมีไฟล์นั้นอยู่จริง
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+# ให้ทำการเรียกไฟล์ .php แทนโดยไม่แสดงใน URL
+RewriteRule ^(.+?)/?$ $1.php [L]

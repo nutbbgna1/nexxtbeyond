@@ -1,0 +1,105 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+require_once __DIR__ . '/../includes/db.php';
+
+function teacherResponse(array $data, int $status = 200): never
+{
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function teacherBody(): array
+{
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($data)) teacherResponse(['error' => 'ข้อมูล JSON ไม่ถูกต้อง'], 400);
+    return $data;
+}
+
+try {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method === 'GET') {
+        $rows = $pdo->query(
+            "SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.avatar_url,
+                    u.is_active, u.created_at,
+                    COUNT(DISTINCT c.id) AS course_count,
+                    GROUP_CONCAT(DISTINCT c.subject ORDER BY c.subject SEPARATOR ', ') AS subjects
+             FROM users u
+             LEFT JOIN courses c ON c.teacher_id = u.id AND c.status = 'active'
+             WHERE u.role = 'teacher'
+             GROUP BY u.id
+             ORDER BY u.created_at DESC, u.id DESC"
+        )->fetchAll();
+        teacherResponse(['teachers' => array_map(static fn(array $row): array => [
+            'id' => (string) $row['id'],
+            'email' => $row['email'],
+            'firstName' => $row['first_name'],
+            'lastName' => $row['last_name'],
+            'phone' => $row['phone'],
+            'avatarUrl' => $row['avatar_url'],
+            'isActive' => (bool) $row['is_active'],
+            'courseCount' => (int) $row['course_count'],
+            'subjects' => $row['subjects'],
+            'createdAt' => $row['created_at'],
+        ], $rows)]);
+    }
+
+    if ($method === 'POST') {
+        $body = teacherBody();
+        $firstName = trim((string) ($body['firstName'] ?? ''));
+        $lastName = trim((string) ($body['lastName'] ?? ''));
+        $email = mb_strtolower(trim((string) ($body['email'] ?? '')));
+        $phone = trim((string) ($body['phone'] ?? ''));
+        $password = (string) ($body['password'] ?? '');
+        if ($firstName === '' || $lastName === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            teacherResponse(['error' => 'กรุณากรอกชื่อ นามสกุล และอีเมลให้ถูกต้อง'], 422);
+        }
+        if (mb_strlen($password) < 8) {
+            teacherResponse(['error' => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'], 422);
+        }
+        $exists = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+        $exists->execute([':email' => $email]);
+        if ($exists->fetch()) teacherResponse(['error' => 'อีเมลนี้มีบัญชีอยู่แล้ว'], 409);
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO users (email, password_hash, first_name, last_name, phone, role, is_active)
+             VALUES (:email, :password_hash, :first_name, :last_name, :phone, 'teacher', 1)"
+        );
+        $stmt->execute([
+            ':email' => $email,
+            ':password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            ':first_name' => $firstName,
+            ':last_name' => $lastName,
+            ':phone' => $phone !== '' ? $phone : null,
+        ]);
+        teacherResponse(['success' => true, 'teacherId' => (int) $pdo->lastInsertId()], 201);
+    }
+
+    if ($method === 'PATCH') {
+        $body = teacherBody();
+        $id = (int) ($body['id'] ?? 0);
+        if ($id < 1 || !array_key_exists('isActive', $body)) {
+            teacherResponse(['error' => 'ข้อมูลที่ต้องการแก้ไขไม่ถูกต้อง'], 422);
+        }
+        $stmt = $pdo->prepare("UPDATE users SET is_active = :active WHERE id = :id AND role = 'teacher'");
+        $stmt->execute([':active' => $body['isActive'] ? 1 : 0, ':id' => $id]);
+        teacherResponse(['success' => true]);
+    }
+
+    if ($method === 'DELETE') {
+        $id = (int) ($_GET['id'] ?? 0);
+        if ($id < 1) teacherResponse(['error' => 'ไม่พบรหัสคุณครู'], 422);
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id AND role = 'teacher'");
+        $stmt->execute([':id' => $id]);
+        teacherResponse(['success' => true]);
+    }
+
+    teacherResponse(['error' => 'Method not allowed'], 405);
+} catch (Throwable $error) {
+    error_log('Teacher API error: ' . $error->getMessage());
+    teacherResponse(['error' => 'ระบบข้อมูลคุณครูขัดข้อง กรุณาลองใหม่'], 500);
+}

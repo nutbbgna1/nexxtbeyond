@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-ink bg-surface antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-navy-950 font-bold leading-tight;
+  }
+  a {
+    @apply transition-colors;
+  }
+  .container {
+    @apply max-w-[1180px] mx-auto px-5 w-full;
+  }
+  
+  /* Retain some global base custom styles that are hard to do with utilities */
+  .skip-link {
+    @apply fixed -top-[80px] left-4 z-[100] px-4 py-2.5 rounded-lg text-white bg-pink-600 focus:top-3;
+  }
+  .eyebrow {
+    @apply flex items-center gap-2.5 text-[12px] font-black tracking-[0.15em] text-primary-600 mb-3;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply w-[25px] h-[3px] rounded-full bg-pink-500;
+  }
+  .eyebrow.light {
+    @apply text-[#b8d3ff];
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-[48px] px-5 py-2.5 rounded-[13px] font-[850] transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-45 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+  .btn-primary {
+    @apply text-white bg-pink-500 shadow-pink;
+  }
+  .btn-secondary {
+    @apply text-primary-600 bg-primary-100;
+  }
+  .btn-outline {
+    @apply border border-line text-navy-900 bg-white;
+  }
+  .btn-dark {
+    @apply text-white bg-navy-950;
+  }
+}
+
+@layer base {
+  body.menu-open {
+    overflow: hidden;
+  }
+}
