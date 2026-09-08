@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = '🤖 AI สร้างข้อสอบ (AI Exam Generator)';
 $pageDesc = 'สร้างข้อสอบอัตโนมัติด้วย AI พร้อมเฉลยและคำอธิบาย';
 $currentPage = 'ai-exam.php';

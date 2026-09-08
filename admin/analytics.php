@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = 'Analytics และรายงาน';
 $pageDesc = 'รายงานจากข้อมูลการใช้งานจริงในระบบ';
 $currentPage = 'analytics.php';

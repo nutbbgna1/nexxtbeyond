@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle='Question Bank (คลังข้อสอบ)'; $pageDesc='เก็บข้อสอบเป็นชุดและเปิดดูรายละเอียดคำถาม'; $currentPage='question-bank.php';
 ?>
 <!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">

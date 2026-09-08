@@ -4,6 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/includes/access.php';
 
 function settingsRespond(array $payload, int $status = 200): never
 {
@@ -36,8 +37,8 @@ $defaults = [
     'tax_id' => '',
     'payment_instructions' => '',
     'student_portal_enabled' => '1',
-    'teacher_course_access' => '1',
-    'teacher_test_access' => '1',
+    'teacher_course_access' => '0',
+    'teacher_test_access' => '0',
     'guest_test_access' => '1',
     'email_notifications' => '1',
 ];
@@ -45,6 +46,11 @@ $booleanKeys = [
     'registration_enabled', 'maintenance_mode', 'student_portal_enabled',
     'teacher_course_access', 'teacher_test_access', 'guest_test_access', 'email_notifications',
 ];
+
+foreach (teacherMenuSettings() as $key => $menu) {
+    $defaults[$key] = '0';
+    if (!in_array($key, $booleanKeys, true)) $booleanKeys[] = $key;
+}
 
 try {
     ensureSettingsTable($pdo);

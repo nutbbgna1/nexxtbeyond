@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = 'จัดการคอร์สเรียน';
 $pageDesc = 'สร้าง แก้ไข และเผยแพร่คอร์สเรียน';
 $currentPage = 'courses.php';

@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');require_once __DIR__.'/../includes/db.php';
+require_once __DIR__.'/includes/access.php';
 function orderOut(array $d,int $s=200):never{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);exit;}
 try{$m=$_SERVER['REQUEST_METHOD']??'GET';
 if($m==='GET'){$rows=$pdo->query("SELECT o.*,CONCAT_WS(' ',u.first_name,u.last_name) student_name,u.email,GROUP_CONCAT(CONCAT(c.title,' ×',oi.quantity) ORDER BY oi.id SEPARATOR ', ') courses FROM orders o JOIN users u ON u.id=o.user_id LEFT JOIN order_items oi ON oi.order_id=o.id LEFT JOIN courses c ON c.id=oi.course_id GROUP BY o.id ORDER BY o.created_at DESC,o.id DESC")->fetchAll();$stats=$pdo->query("SELECT SUM(status='pending') pending_count,COALESCE(SUM(CASE WHEN status='confirmed' AND DATE(confirmed_at)=CURRENT_DATE THEN net_amount ELSE 0 END),0) today_sales FROM orders")->fetch();orderOut(['orders'=>$rows,'stats'=>$stats]);}

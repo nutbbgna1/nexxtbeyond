@@ -76,10 +76,27 @@
         });
         savedSettings = data.settings || {};
         populate();
+        document.querySelectorAll('.teacher-menu-switch').forEach(field => { field.disabled = false; });
       } catch (error) {
         showNotice(error.message, true);
       }
     }
+
+    document.querySelectorAll('.teacher-menu-switch').forEach(field => {
+      field.addEventListener('change', async () => {
+        const key = field.dataset.setting;
+        const checked = field.checked;
+        field.disabled = true;
+        try {
+          await request('settings-api', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({settings: {[key]: checked}})});
+          savedSettings[key] = checked;
+          showNotice('บันทึกสิทธิ์ Teacher แล้ว');
+        } catch (error) {
+          field.checked = Boolean(savedSettings[key]);
+          showNotice(error.message, true);
+        } finally { field.disabled = false; }
+      });
+    });
 
     tabs.forEach(tab => tab.addEventListener("click", (e) => {
       e.preventDefault();
@@ -93,6 +110,7 @@
         if (!button) return;
         const settings = {};
         form.querySelectorAll("[data-setting]").forEach(field => {
+          if (field.classList.contains('teacher-menu-switch')) return;
           settings[field.dataset.setting] = field.type === "checkbox" ? field.checked : field.value.trim();
         });
         button.disabled = true;

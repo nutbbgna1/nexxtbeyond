@@ -23,6 +23,10 @@ $adminMenu = [
   ]
 ];
 $currentPage = $currentPage ?? 'index.php';
+foreach ($adminMenu as $group => $items) {
+  $adminMenu[$group] = array_values(array_filter($items, fn($item) => consoleAllowed($item[0])));
+  if (!$adminMenu[$group]) unset($adminMenu[$group]);
+}
 ?>
 <aside class="fixed inset-y-0 left-0 w-[240px] bg-navy-950 text-white overflow-y-auto flex flex-col z-40 max-[960px]:-translate-x-full transition-transform duration-300 shadow-[4px_0_24px_rgba(15,42,83,0.1)]" id="adminSidebar">
   <div class="p-6 border-b border-white/10 shrink-0">
@@ -38,7 +42,7 @@ $currentPage = $currentPage ?? 'index.php';
       </svg>
       <span class="grid leading-[1.15]">
         <strong class="text-white text-[14px] tracking-[0.04em]">NEXT BEYOND</strong>
-        <small class="text-pink-500 text-[9px] font-bold tracking-[0.18em]">ADMIN CONSOLE</small>
+        <small class="text-pink-500 text-[9px] font-bold tracking-[0.18em]"><?= $consoleUser['role'] === 'teacher' ? 'TEACHER CONSOLE' : 'ADMIN CONSOLE' ?></small>
       </span>
     </a>
   </div>

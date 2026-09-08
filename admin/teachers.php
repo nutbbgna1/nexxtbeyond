@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = 'คุณครูผู้สอน';
 $pageDesc = 'จัดการรายชื่อคุณครู บัญชี และคอร์สที่สอน';
 $currentPage = 'teachers.php';

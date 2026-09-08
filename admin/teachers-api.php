@@ -4,6 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/includes/access.php';
 
 function teacherResponse(array $data, int $status = 200): never
 {

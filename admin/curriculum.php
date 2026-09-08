@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle='จัดการบทเรียน (Curriculum)'; $pageDesc='จัดการเนื้อหาและลำดับบทเรียนของแต่ละคอร์ส'; $currentPage='curriculum.php';
 ?>
 <!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">

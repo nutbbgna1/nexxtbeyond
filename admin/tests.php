@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = 'แบบทดสอบ (Tests)';
 $pageDesc = 'จัดการแบบทดสอบ Placement Test, Quiz, และ Post-test';
 $currentPage = 'tests.php';

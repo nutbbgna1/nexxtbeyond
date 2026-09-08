@@ -16,8 +16,8 @@
       <div class="w-[42px] h-[42px] rounded-full bg-pink-100 text-pink-500 font-bold flex items-center justify-center shadow-sm border border-pink-200">AD</div>
       <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#e8ecf2] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
         <div class="p-3 border-b border-[#e8ecf2]">
-          <div class="font-bold text-navy-950 text-[14px]">Admin User</div>
-          <div class="text-[12px] text-[#65738a]">Super Administrator</div>
+          <div class="font-bold text-navy-950 text-[14px]"><?= htmlspecialchars($consoleUser['first_name'] . ' ' . $consoleUser['last_name']) ?></div>
+          <div class="text-[12px] text-[#65738a]"><?= $consoleUser['role'] === 'teacher' ? 'Teacher' : 'Administrator' ?></div>
         </div>
         <div class="p-2">
           <a href="#" class="block px-3 py-2 rounded-lg text-[13px] text-navy-950 hover:bg-[#f8fafc] transition-colors">ตั้งค่าโปรไฟล์</a>

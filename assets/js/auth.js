@@ -212,7 +212,7 @@
         if (returnTo && !returnTo.includes(':') && !returnTo.startsWith('//')) {
           window.location.href = returnTo;
         } else {
-          window.location.href = result.user.role === 'admin' ? 'admin/' : 'student/';
+          window.location.href = ['admin', 'teacher'].includes(result.user.role) ? 'admin/' : 'student/';
         }
       } catch (error) {
         alert(error.message);

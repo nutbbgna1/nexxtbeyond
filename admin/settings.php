@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/includes/access.php';
 $pageTitle = 'ตั้งค่าระบบ (System Settings)';
 $pageDesc = 'ตั้งค่าข้อมูลสถาบัน การชำระเงิน สิทธิ์ และ AI';
 $currentPage = 'settings.php';
@@ -78,8 +79,16 @@ $currentPage = 'settings.php';
             <div class="px-7 py-5 border-b border-[#e8ecf2]"><h3 class="text-[17px] font-bold">บทบาทและสิทธิ์</h3><p class="mt-1 text-[12px] text-[#65738a]">กำหนดความสามารถหลักของผู้ใช้งานแต่ละกลุ่ม</p></div>
             <div class="p-7 space-y-5">
               <label class="settings-toggle-row"><span><b>เปิดใช้งาน Student Portal</b><small>ให้นักเรียนเข้าสู่แดชบอร์ด คอร์ส และประวัติข้อสอบ</small></span><input data-setting="student_portal_enabled" type="checkbox" class="settings-checkbox"></label>
-              <label class="settings-toggle-row"><span><b>ครูจัดการคอร์สได้</b><small>อนุญาต Role Teacher เพิ่มและแก้ไขข้อมูลคอร์ส</small></span><input data-setting="teacher_course_access" type="checkbox" class="settings-checkbox"></label>
-              <label class="settings-toggle-row"><span><b>ครูจัดการข้อสอบได้</b><small>อนุญาต Role Teacher เปิด ปิด และแก้ไขแบบทดสอบ</small></span><input data-setting="teacher_test_access" type="checkbox" class="settings-checkbox"></label>
+              <h3 class="text-[17px] font-bold">เมนูของ Teacher ทุกคน</h3>
+              <?php foreach (teacherMenuSettings() as $key => [$label]): ?>
+              <label class="settings-toggle-row"><b><?= htmlspecialchars($label) ?></b><input data-setting="<?= $key ?>" type="checkbox" role="switch" class="teacher-menu-switch" disabled></label>
+              <?php endforeach; ?>
+              <style>
+                .teacher-menu-switch{appearance:none;width:44px;height:26px;flex:0 0 44px;border:0;border-radius:13px;background:#8793a1;position:relative;cursor:pointer;transition:background .15s}
+                .teacher-menu-switch:before{content:'';position:absolute;width:20px;height:20px;top:3px;left:3px;border-radius:50%;background:white;transition:transform .15s}
+                .teacher-menu-switch:checked{background:#18845c}.teacher-menu-switch:checked:before{transform:translateX(18px)}
+                .teacher-menu-switch:focus-visible{outline:3px solid #e72d82;outline-offset:3px}.teacher-menu-switch:disabled{opacity:.45;cursor:wait}
+              </style>
               <label class="settings-toggle-row"><span><b>อนุญาตข้อสอบสำหรับ Guest</b><small>แอดมินสามารถเปิดข้อสอบให้ผู้ที่ไม่ได้เข้าสู่ระบบทำได้</small></span><input data-setting="guest_test_access" type="checkbox" class="settings-checkbox"></label>
               <label class="settings-toggle-row"><span><b>แจ้งเตือนทางอีเมล</b><small>เปิดสถานะการส่งอีเมลแจ้งเตือนจากระบบ</small></span><input data-setting="email_notifications" type="checkbox" class="settings-checkbox"></label>
             </div>

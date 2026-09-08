@@ -12,7 +12,7 @@ let isRevealed   = false;
 let _serverKeyConfigured = false;   // true หากมี key ใน DB แล้ว
 
 // ---------- Settings API (server-side) ----------
-const SETTINGS_API = '/admin/ai-settings-api.php';
+const SETTINGS_API = '../admin/ai-settings-api';
 
 async function loadSettingsStatus() {
     try {
@@ -227,7 +227,7 @@ async function handleGenerate(e) {
 
         // ── บันทึกลง Database อัตโนมัติ ──
         try {
-            const saveRes = await fetch('/admin/exams-api', {
+            const saveRes = await fetch('../admin/exams-api', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({

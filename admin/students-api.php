@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1); header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store'); require_once __DIR__.'/../includes/db.php';
+require_once __DIR__.'/includes/access.php';
 function out(array $d,int $s=200):never{http_response_code($s);echo json_encode($d,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);exit;}
 function body():array{$d=json_decode(file_get_contents('php://input'),true);if(!is_array($d))out(['error'=>'ข้อมูลไม่ถูกต้อง'],400);return $d;}
 try{$m=$_SERVER['REQUEST_METHOD']??'GET';

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/access.php';
 $pageTitle = 'ภาพรวม (Dashboard)';
 $pageDesc = 'ภาพรวมข้อมูลและกิจกรรมล่าสุดของระบบ';
 $currentPage = 'index.php';
