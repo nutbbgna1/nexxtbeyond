@@ -216,6 +216,32 @@ async function handleGenerate(e) {
         answers     = {};
         isRevealed  = false;
 
+        // ── บันทึกลง Database อัตโนมัติ ──
+        try {
+            const saveRes = await fetch('/admin/exams-api', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({
+                    questions:      currentExam,
+                    title:          `แบบทดสอบจาก AI ${new Date().toLocaleDateString('th-TH')}`,
+                    subject:        'ทั่วไป',
+                    grade:          'ทุกระดับ',
+                    generationMode: type,
+                    sourceUrl:      driveUrl,
+                }),
+            });
+            const saveData = await saveRes.json();
+            if (saveRes.ok && saveData.examId) {
+                // redirect ไปหน้า Tests พร้อมแจ้งว่าบันทึกสำเร็จ
+                window.location.href = `/admin/tests?created=${saveData.examId}`;
+                return;
+            }
+        } catch (_) {
+            // ถ้าบันทึก DB ไม่สำเร็จ ยังให้ดูข้อสอบได้ใน session
+            console.warn('ไม่สามารถบันทึกลงฐานข้อมูลได้ แสดงผลแบบ session เท่านั้น');
+        }
+
+        // fallback: แสดงผลใน session (กรณีบันทึก DB ไม่สำเร็จ)
         document.getElementById('exam-meta').innerHTML = `
             <span class="bg-pink-50 text-pink-600 font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide uppercase">ประเภท: ${type}</span>
             <span class="bg-[#f4f7fb] text-[#65738a] font-bold text-[11px] px-2.5 py-1 rounded-md tracking-wide">จำนวน: ${currentExam.length} ข้อ</span>
@@ -226,6 +252,7 @@ async function handleGenerate(e) {
         document.getElementById('view-form').classList.add('hidden');
         document.getElementById('view-exam').classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
 
     } catch (error) {
         alert('Error: ' + error.message);
