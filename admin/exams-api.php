@@ -22,7 +22,51 @@ function requestBody(): array
     return $body;
 }
 
+function tableColumns(PDO $pdo, string $table): array
+{
+    $columns = [];
+    foreach ($pdo->query("SHOW COLUMNS FROM `{$table}`")->fetchAll() as $column) {
+        $columns[(string) $column['Field']] = (string) $column['Type'];
+    }
+    return $columns;
+}
+
+function ensureExamSchema(PDO $pdo): void
+{
+    $examColumns = tableColumns($pdo, 'exams');
+    $examAdditions = [
+        'source_url' => "ADD COLUMN `source_url` VARCHAR(1000) NULL AFTER `is_ai_generated`",
+        'generation_mode' => "ADD COLUMN `generation_mode` ENUM('copy','similar','levels') NULL AFTER `source_url`",
+        'is_published' => "ADD COLUMN `is_published` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`",
+        'requires_login' => "ADD COLUMN `requires_login` TINYINT(1) NOT NULL DEFAULT 1 AFTER `is_published`",
+    ];
+    foreach ($examAdditions as $name => $definition) {
+        if (!isset($examColumns[$name])) {
+            $pdo->exec("ALTER TABLE `exams` {$definition}");
+        }
+    }
+    if (!str_contains(strtolower($examColumns['type'] ?? ''), "'quiz'")) {
+        $pdo->exec("ALTER TABLE `exams` MODIFY COLUMN `type` ENUM('pretest','posttest','quiz','placement') NOT NULL DEFAULT 'quiz'");
+    }
+    if (!str_contains(strtolower($examColumns['status'] ?? ''), "'archived'")) {
+        $pdo->exec("ALTER TABLE `exams` MODIFY COLUMN `status` ENUM('draft','active','closed','archived') NOT NULL DEFAULT 'draft'");
+    }
+
+    $questionColumns = tableColumns($pdo, 'exam_questions');
+    $questionAdditions = [
+        'passage' => "ADD COLUMN `passage` MEDIUMTEXT NULL AFTER `question_text`",
+        'difficulty' => "ADD COLUMN `difficulty` VARCHAR(50) NULL AFTER `skill`",
+        'created_at' => "ADD COLUMN `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `difficulty`",
+    ];
+    foreach ($questionAdditions as $name => $definition) {
+        if (!isset($questionColumns[$name])) {
+            $pdo->exec("ALTER TABLE `exam_questions` {$definition}");
+        }
+    }
+}
+
 try {
+    ensureExamSchema($pdo);
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
     if ($method === 'GET') {

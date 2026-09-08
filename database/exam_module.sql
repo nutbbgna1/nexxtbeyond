@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `password_hash` VARCHAR(255) NOT NULL,
     `first_name` VARCHAR(100) NOT NULL,
     `last_name` VARCHAR(100) NOT NULL,
-    `phoneขึ้น` VARCHAR(20) NULL,
+    `phone` VARCHAR(20) NULL,
     `role` ENUM('student','teacher','admin') NOT NULL DEFAULT 'student',
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
