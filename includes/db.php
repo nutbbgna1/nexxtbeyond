@@ -22,5 +22,22 @@ try {
     ];
     $pdo = new PDO($dsn, ADMIN_DB_USER, ADMIN_DB_PASS, $options);
 } catch (PDOException $e) {
-    die('Connection failed. Please check the database configuration.');
+    error_log('Database connection failed: ' . $e->getMessage());
+
+    $requestPath = (string) ($_SERVER['REQUEST_URI'] ?? '');
+    $accept = (string) ($_SERVER['HTTP_ACCEPT'] ?? '');
+    $expectsJson = stripos($requestPath, 'api') !== false || stripos($accept, 'application/json') !== false;
+
+    if ($expectsJson) {
+        http_response_code(503);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'error' => 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูล กรุณาตั้งค่า ADMIN_DB_HOST, ADMIN_DB_NAME, ADMIN_DB_USER และ ADMIN_DB_PASS',
+            'code' => 'DATABASE_NOT_CONFIGURED',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    http_response_code(503);
+    die('Database service is temporarily unavailable.');
 }

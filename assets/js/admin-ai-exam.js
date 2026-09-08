@@ -3,6 +3,19 @@ let currentExam = null;
 let answers = {};
 let isRevealed = false;
 
+async function readApiResponse(response) {
+    const raw = await response.text();
+    if (!raw) return {};
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        throw new Error(response.ok
+            ? 'เซิร์ฟเวอร์ตอบข้อมูลไม่ถูกต้อง'
+            : `เซิร์ฟเวอร์ขัดข้อง (${response.status})`);
+    }
+}
+
 // View Routing
 function goHome() {
     document.getElementById('view-form').classList.remove('hidden');
@@ -38,7 +51,8 @@ async function openSettings() {
     document.getElementById('settings-modal').classList.remove('hidden');
     try {
         const response = await fetch('ai-settings-api');
-        const data = await response.json();
+        const data = await readApiResponse(response);
+        if (!response.ok) throw new Error(data.error || 'ตรวจสอบการตั้งค่าไม่ได้');
         document.getElementById('api-key-input').placeholder = data.configured ? 'บันทึก API Key แล้ว — กรอกใหม่เมื่อต้องการเปลี่ยน' : 'AIzaSy...';
     } catch { document.getElementById('api-key-input').placeholder = 'ตรวจสอบการตั้งค่าไม่ได้'; }
 }
@@ -52,7 +66,7 @@ async function saveSettings() {
     if (!key) return alert('กรุณากรอก API Key');
     try {
         const response = await fetch('ai-settings-api', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:key})});
-        const data = await response.json().catch(()=>({}));
+        const data = await readApiResponse(response);
         if(!response.ok) throw new Error(data.error||'บันทึกไม่สำเร็จ');
         localStorage.removeItem('gemini_api_key'); closeSettings(); alert('บันทึก API Key ลงฐานข้อมูลแล้ว');
     } catch(error) { alert(error.message); }
@@ -107,7 +121,7 @@ async function handleGenerate(e) {
             })
         });
 
-        const data = await res.json();
+        const data = await readApiResponse(res);
         if (!res.ok) throw new Error(data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
         if (!data.questions || data.questions.length === 0) throw new Error('AI ไม่สามารถสร้างข้อสอบได้ โปรดตรวจสอบเอกสารต้นฉบับ');
 
@@ -129,7 +143,7 @@ async function handleGenerate(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(generatedExam)
         });
-        const saveResult = await saveResponse.json();
+        const saveResult = await readApiResponse(saveResponse);
         if (!saveResponse.ok) {
             throw new Error(saveResult.error || 'ไม่สามารถบันทึกข้อสอบลงฐานข้อมูลได้');
         }
