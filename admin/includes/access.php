@@ -11,7 +11,7 @@ function teacherMenuSettings(): array
         'teacher_course_access' => ['คอร์สเรียน', ['courses.php', 'courses-api.php']],
         'teacher_curriculum_access' => ['บทเรียนในคอร์ส', ['curriculum.php', 'curriculum-api.php']],
         'teacher_test_access' => ['แบบทดสอบและคลังข้อสอบ', ['tests.php', 'question-bank.php', 'exams-api.php']],
-        'teacher_ai_access' => ['AI สร้างข้อสอบ', ['ai-exam.php']],
+        'teacher_ai_access' => ['AI สร้างข้อสอบ', ['ai-exam.php', 'ai-exam-studio.php', 'ai-exam-upload-api.php']],
         'teacher_students_access' => ['นักเรียน', ['students.php', 'students-api.php']],
         'teacher_orders_access' => ['คำสั่งซื้อและบัญชี', ['orders.php', 'orders-api.php']],
     ];

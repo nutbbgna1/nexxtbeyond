@@ -35,9 +35,10 @@ if ($useServerKey) {
     $apiKey = $input['apiKey'];
 }
 
-$url = $input['url'] ?? '';
+$url = trim((string) ($input['url'] ?? ''));
+$storedFile = basename(trim((string) ($input['storedFile'] ?? '')));
 $type = $input['type'] ?? 'copy';
-$count = isset($input['count']) ? (int)$input['count'] : 10;
+$count = max(1, min(50, isset($input['count']) ? (int)$input['count'] : 10));
 $counts = $input['counts'] ?? null;
 $details = $input['details'] ?? '';
 $difficulty = $input['difficulty'] ?? '';
@@ -53,49 +54,81 @@ function extractFileId($url) {
     return null;
 }
 
-$fileId = extractFileId($url);
-if (!$fileId) {
-    http_response_code(400);
-    echo json_encode(["error" => "Google Drive URL ไม่ถูกต้อง"]);
-    exit();
-}
-
 $fileType = 'text';
 $fileData = null;
 
-$exportUrl = "https://docs.google.com/document/d/{$fileId}/export?format=txt";
-$ch = curl_init($exportUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-if ($httpCode === 200 && !empty($response) && stripos($response, '<html') === false) {
-    $fileData = $response;
+if ($storedFile !== '') {
+    if (!preg_match('/^source-[a-zA-Z0-9-]+\.(pdf|txt|docx)$/', $storedFile)) {
+        http_response_code(400);
+        echo json_encode(["error" => "ข้อมูลไฟล์บน Server ไม่ถูกต้อง"]);
+        exit();
+    }
+    $uploadRoot = realpath(__DIR__ . '/../assets/uploads/ai-exam');
+    $serverPath = $uploadRoot ? realpath($uploadRoot . '/' . $storedFile) : false;
+    if (!$serverPath || !$uploadRoot || !str_starts_with($serverPath, $uploadRoot . DIRECTORY_SEPARATOR) || !is_file($serverPath)) {
+        http_response_code(404);
+        echo json_encode(["error" => "ไม่พบเอกสารที่อัปโหลดบน Server"]);
+        exit();
+    }
+    $extension = strtolower(pathinfo($serverPath, PATHINFO_EXTENSION));
+    if ($extension === 'pdf') {
+        $fileType = 'pdf';
+        $fileData = base64_encode((string) file_get_contents($serverPath));
+    } elseif ($extension === 'docx') {
+        $zip = new ZipArchive();
+        if ($zip->open($serverPath) !== true) {
+            http_response_code(400);
+            echo json_encode(["error" => "ไม่สามารถอ่านไฟล์ DOCX ได้"]);
+            exit();
+        }
+        $xml = $zip->getFromName('word/document.xml');
+        $zip->close();
+        if ($xml === false) {
+            http_response_code(400);
+            echo json_encode(["error" => "ไฟล์ DOCX ไม่มีเนื้อหาที่อ่านได้"]);
+            exit();
+        }
+        $xml = str_replace(['</w:p>', '</w:tr>', '<w:tab/>'], ["\n", "\n", "\t"], $xml);
+        $fileData = html_entity_decode(strip_tags($xml), ENT_QUOTES | ENT_XML1, 'UTF-8');
+    } else {
+        $fileData = (string) file_get_contents($serverPath);
+    }
 } else {
-    $genericUrl = "https://drive.google.com/uc?export=download&id={$fileId}";
-    $ch = curl_init($genericUrl);
+    $fileId = extractFileId($url);
+    if (!$fileId) {
+        http_response_code(400);
+        echo json_encode(["error" => "Google Drive URL ไม่ถูกต้อง"]);
+        exit();
+    }
+    $exportUrl = "https://docs.google.com/document/d/{$fileId}/export?format=txt";
+    $ch = curl_init($exportUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     $response = curl_exec($ch);
-    $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-
-    if ($httpCode !== 200 || stripos($contentType, 'html') !== false) {
-        http_response_code(400);
-        echo json_encode(["error" => "ไม่สามารถอ่านไฟล์ได้ โปรดตั้งค่าแชร์เป็น 'ทุกคนที่มีลิงก์ (Anyone with the link)'"]);
-        exit();
-    }
-
-    $headerPreview = substr($response, 0, 5);
-    if (stripos($contentType, 'pdf') !== false || $headerPreview === '%PDF-') {
-        $fileType = 'pdf';
-        $fileData = base64_encode($response);
-    } else {
-        $fileType = 'text';
+    if ($httpCode === 200 && !empty($response) && stripos($response, '<html') === false) {
         $fileData = $response;
+    } else {
+        $genericUrl = "https://drive.google.com/uc?export=download&id={$fileId}";
+        $ch = curl_init($genericUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $response = curl_exec($ch);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($httpCode !== 200 || stripos((string) $contentType, 'html') !== false) {
+            http_response_code(400);
+            echo json_encode(["error" => "ไม่สามารถอ่านไฟล์ได้ โปรดตั้งค่าแชร์เป็น 'ทุกคนที่มีลิงก์ (Anyone with the link)'"]);
+            exit();
+        }
+        if (stripos((string) $contentType, 'pdf') !== false || substr((string) $response, 0, 5) === '%PDF-') {
+            $fileType = 'pdf';
+            $fileData = base64_encode((string) $response);
+        } else {
+            $fileData = (string) $response;
+        }
     }
 }
 
@@ -369,6 +402,17 @@ try {
             $q['questionText'] = trim(preg_replace('/^(?:\*?\*?\d+\.?\)?\s*)/', '', $q['questionText']));
         }
     }
+    unset($q);
+
+    $seenQuestions = [];
+    $finalQuestions = array_values(array_filter($finalQuestions, static function ($question) use (&$seenQuestions) {
+        $text = trim((string) ($question['questionText'] ?? ''));
+        if ($text === '') return false;
+        $signature = hash('sha256', preg_replace('/\s+/u', '', mb_strtolower($text, 'UTF-8')));
+        if (isset($seenQuestions[$signature])) return false;
+        $seenQuestions[$signature] = true;
+        return true;
+    }));
 
     echo json_encode(["questions" => $finalQuestions]);
 
