@@ -267,6 +267,12 @@ try {
         if (in_array($field, ['isPublished', 'requiresLogin'], true)) {
             $value = $value ? 1 : 0;
         }
+        if ($field === 'isPublished') {
+            $status = $value === 1 ? 'active' : 'closed';
+            $stmt = $pdo->prepare('UPDATE exams SET is_published = :published, status = :status WHERE id = :id');
+            $stmt->execute([':published' => $value, ':status' => $status, ':id' => $id]);
+            respond(['success' => true, 'status' => $status]);
+        }
         $stmt = $pdo->prepare("UPDATE exams SET {$fieldMap[$field]} = :value WHERE id = :id");
         $stmt->execute([':value' => $value, ':id' => $id]);
         respond(['success' => true]);

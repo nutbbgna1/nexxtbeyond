@@ -48,10 +48,22 @@
       <td class="px-4 py-5"><b class="text-[13px]">${esc(exam.subject || "ทั่วไป")}</b><div class="text-[11px] text-[#65738a]">${esc(exam.grade || "ทุกระดับ")}</div></td>
       <td class="px-4 py-5 text-center font-bold text-[13px]">${exam.questionCount || 0} ข้อ</td>
       <td class="px-4 py-5 text-center font-bold text-[13px]">${exam.attemptCount || 0}</td>
-      <td class="px-4 py-5 space-y-2">
-        <select data-id="${esc(exam.id)}" data-field="status" class="block w-full border rounded-lg px-2 py-1 text-[12px]"><option value="draft" ${exam.status === "draft" ? "selected" : ""}>ฉบับร่าง</option><option value="active" ${exam.status === "active" ? "selected" : ""}>เปิดรับทำ</option><option value="closed" ${exam.status === "closed" ? "selected" : ""}>ปิดรับทำ</option><option value="archived" ${exam.status === "archived" ? "selected" : ""}>เก็บถาวร</option></select>
-        <label class="flex gap-2 text-[12px]"><input type="checkbox" data-id="${esc(exam.id)}" data-field="isPublished" ${exam.isPublished ? "checked" : ""}> แสดงบนเว็บไซต์</label>
-        <label class="flex gap-2 text-[12px]"><input type="checkbox" data-id="${esc(exam.id)}" data-field="requiresLogin" ${exam.requiresLogin ? "checked" : ""}> ต้อง Login ก่อนทำ</label>
+      <td class="px-4 py-5">
+        <div class="space-y-3 min-w-[220px]">
+          <div class="flex items-center justify-between gap-4">
+            <div><div class="text-[12px] font-bold text-navy-950">เปิดบนเว็บไซต์</div><div class="text-[10px] text-[#65738a] mt-0.5">${exam.isPublished ? "กำลังแสดงใน Placement Test" : "ยังไม่แสดงบนเว็บไซต์"}</div></div>
+            <button type="button" role="switch" aria-label="เปิดแบบทดสอบบนเว็บไซต์" aria-checked="${exam.isPublished ? "true" : "false"}" data-toggle-field="isPublished" data-id="${esc(exam.id)}" class="relative shrink-0 w-11 h-6 rounded-full p-0.5 transition-colors ${exam.isPublished ? "bg-pink-500" : "bg-[#cbd5e1]"}">
+              <span class="block w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${exam.isPublished ? "translate-x-5" : ""}"></span>
+            </button>
+          </div>
+          <div class="h-px bg-[#edf0f4]"></div>
+          <div class="flex items-center justify-between gap-4">
+            <div><div class="text-[12px] font-bold text-navy-950">ต้องเข้าสู่ระบบ</div><div class="text-[10px] text-[#65738a] mt-0.5">${exam.requiresLogin ? "เฉพาะสมาชิกเท่านั้น" : "ผู้เข้าชมทั่วไปทำได้"}</div></div>
+            <button type="button" role="switch" aria-label="กำหนดให้เข้าสู่ระบบก่อนทำ" aria-checked="${exam.requiresLogin ? "true" : "false"}" data-toggle-field="requiresLogin" data-id="${esc(exam.id)}" class="relative shrink-0 w-11 h-6 rounded-full p-0.5 transition-colors ${exam.requiresLogin ? "bg-pink-500" : "bg-[#cbd5e1]"}">
+              <span class="block w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${exam.requiresLogin ? "translate-x-5" : ""}"></span>
+            </button>
+          </div>
+        </div>
       </td>
       <td class="px-4 py-5 text-right whitespace-nowrap"><a href="question-bank.php?exam=${esc(exam.id)}" class="text-[#2369dd] text-[12px] font-bold mr-3">ดูคำถาม</a><button data-delete="${esc(exam.id)}" class="text-[#ef4444] text-[12px] font-bold">ลบ</button></td>
     </tr>`).join("");
@@ -87,6 +99,28 @@
 
   tbody.addEventListener("click", async event => {
     if (event.target.closest("[data-retry]")) return load();
+    const toggle = event.target.closest("[data-toggle-field]");
+    if (toggle) {
+      const field = toggle.dataset.toggleField;
+      const exam = allExams.find(item => item.id === toggle.dataset.id);
+      if (!exam) return;
+      const value = !exam[field];
+      toggle.disabled = true;
+      toggle.classList.add("opacity-60");
+      try {
+        const result = await api(API_URL, {
+          method: "PATCH",
+          body: JSON.stringify({ id: toggle.dataset.id, field, value })
+        });
+        exam[field] = value;
+        if (field === "isPublished") exam.status = result.status || (value ? "active" : "closed");
+        render();
+      } catch (error) {
+        alert(error.message);
+        render();
+      }
+      return;
+    }
     const button = event.target.closest("[data-delete]");
     if (!button || !confirm("ยืนยันการลบแบบทดสอบนี้?")) return;
     button.disabled = true;
