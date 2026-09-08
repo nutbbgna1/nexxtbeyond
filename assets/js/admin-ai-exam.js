@@ -48,13 +48,27 @@ function updateTotal() {
 async function openSettings() {
     document.getElementById('api-key-input').value = '';
     document.getElementById('api-key-input').placeholder = 'กำลังตรวจสอบ...';
+    const status = document.getElementById('api-key-status');
+    status.className = 'hidden mb-3 rounded-xl border px-3 py-2.5 text-[13px] font-bold';
     document.getElementById('settings-modal').classList.remove('hidden');
     try {
         const response = await fetch('ai-settings-api');
         const data = await readApiResponse(response);
         if (!response.ok) throw new Error(data.error || 'ตรวจสอบการตั้งค่าไม่ได้');
-        document.getElementById('api-key-input').placeholder = data.configured ? 'บันทึก API Key แล้ว — กรอกใหม่เมื่อต้องการเปลี่ยน' : 'AIzaSy...';
-    } catch { document.getElementById('api-key-input').placeholder = 'ตรวจสอบการตั้งค่าไม่ได้'; }
+        if (data.configured) {
+            status.textContent = `✓ บันทึกในฐานข้อมูลแล้ว (${data.maskedKey || 'ปิดบังข้อมูล'})`;
+            status.className = 'mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] font-bold text-emerald-700';
+            document.getElementById('api-key-input').placeholder = 'กรอกเฉพาะเมื่อต้องการเปลี่ยน API Key';
+        } else {
+            status.textContent = 'ยังไม่ได้บันทึก API Key ในฐานข้อมูล';
+            status.className = 'mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] font-bold text-amber-700';
+            document.getElementById('api-key-input').placeholder = 'AIzaSy...';
+        }
+    } catch (error) {
+        status.textContent = error.message || 'ตรวจสอบการตั้งค่าไม่ได้';
+        status.className = 'mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] font-bold text-red-700';
+        document.getElementById('api-key-input').placeholder = 'ตรวจสอบการตั้งค่าไม่ได้';
+    }
 }
 
 function closeSettings() {

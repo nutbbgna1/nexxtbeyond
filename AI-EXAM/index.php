@@ -161,8 +161,9 @@ $apiPath = '../AI-EXAM/api.php';
                         <h3 class="text-lg leading-6 font-bold text-navy-950">ตั้งค่าระบบ (Settings)</h3>
                         <div class="mt-4">
                             <label class="block text-[13px] font-bold text-[#65738a] mb-2 uppercase tracking-wide">Gemini API Key</label>
+                            <div id="api-key-status" class="hidden mb-3 rounded-xl border px-3 py-2.5 text-[13px] font-bold"></div>
                             <input type="password" id="api-key-input" class="w-full p-3 border-2 border-[#e8ecf2] rounded-xl focus:border-pink-500 outline-none transition-colors text-navy-950 font-medium" placeholder="AIzaSy..." />
-                            <p class="mt-2 text-[12px] text-[#8e9baf] font-medium leading-relaxed">API Key จะถูกเข้ารหัสและบันทึกในฐานข้อมูลของระบบ</p>
+                            <p class="mt-2 text-[12px] text-[#8e9baf] font-medium leading-relaxed">ระบบไม่แสดง API Key ตัวเต็มกลับมาที่เบราว์เซอร์ หากต้องการเปลี่ยนให้กรอก Key ใหม่แล้วกดบันทึก</p>
                         </div>
                     </div>
                 </div>
