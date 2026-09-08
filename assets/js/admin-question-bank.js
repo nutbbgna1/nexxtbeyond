@@ -46,19 +46,48 @@
     if(push) history.pushState({},"",`question-bank.php?exam=${encodeURIComponent(id)}`);
     renderQuestions();
   }
+  function optionRow(value="",checked=false){
+    return `<div data-option-row class="flex items-center gap-3 p-3 border rounded-xl has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+      <input type="radio" name="correctAnswer" ${checked?"checked":""} required aria-label="กำหนดเป็นคำตอบที่ถูกต้อง">
+      <span data-option-letter class="w-7 h-7 shrink-0 rounded-full bg-[#f1f5f9] flex items-center justify-center font-bold text-[12px]"></span>
+      <input name="option" value="${esc(value)}" required class="flex-1 min-w-0 bg-transparent outline-none text-[14px]" aria-label="ข้อความตัวเลือก">
+      <button type="button" data-remove-option class="w-8 h-8 shrink-0 rounded-lg text-red-500 hover:bg-red-50 font-bold" title="ลบตัวเลือก" aria-label="ลบตัวเลือก">×</button>
+    </div>`;
+  }
+  function refreshOptionRows(){
+    [...form.querySelectorAll("[data-option-row]")].forEach((row,index)=>{
+      row.querySelector("[data-option-letter]").textContent=String.fromCharCode(65+index);
+      row.querySelector('[name="correctAnswer"]').value=String(index);
+    });
+  }
   function openEditor(item){
     editing=item; $("edit-question-number").textContent=`ข้อ ${item.sortOrder} · ${item.options.length} ตัวเลือก`; form.innerHTML=`
       <div><label class="block text-[13px] font-bold mb-2">คำถาม *</label><textarea name="questionText" required rows="7" class="w-full p-4 border rounded-xl focus:border-pink-500 outline-none resize-y">${esc(item.questionText)}</textarea></div>
-      <div class="mt-5"><div class="flex justify-between mb-2"><label class="text-[13px] font-bold">ตัวเลือกและคำตอบที่ถูกต้อง</label><span class="text-[11px] text-[#65738a]">เลือกวงกลมหน้าคำตอบที่ถูก</span></div><div class="space-y-2">${item.options.map((o,i)=>`<label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer has-[:checked]:border-green-500 has-[:checked]:bg-green-50"><input type="radio" name="correctAnswer" value="${i}" ${i===item.correctAnswer?"checked":""} required><span class="w-7 h-7 rounded-full bg-[#f1f5f9] flex items-center justify-center font-bold text-[12px]">${String.fromCharCode(65+i)}</span><input name="option_${i}" value="${esc(o)}" required class="flex-1 bg-transparent outline-none text-[14px]"></label>`).join("")}</div></div>
+      <div class="mt-5"><div class="flex items-center justify-between gap-3 mb-2"><div><label class="text-[13px] font-bold">ตัวเลือกและคำตอบที่ถูกต้อง</label><div class="text-[11px] text-[#65738a] mt-0.5">เลือกวงกลมหน้าคำตอบที่ถูก</div></div><button type="button" data-add-option class="h-9 px-3 rounded-lg bg-blue-50 text-blue-600 font-bold text-[12px]">＋ เพิ่มตัวเลือก</button></div><div id="option-editor" class="space-y-2">${item.options.map((o,i)=>optionRow(o,i===item.correctAnswer)).join("")}</div></div>
       <div class="grid grid-cols-2 gap-4 mt-5 max-[640px]:grid-cols-1"><div><label class="block text-[13px] font-bold mb-2">ทักษะ</label><input name="skill" value="${esc(item.skill||"")}" class="field"></div><div><label class="block text-[13px] font-bold mb-2">ระดับความยาก</label><select name="difficulty" class="field"><option value="">ไม่ระบุ</option>${["ง่าย","ปานกลาง","ยาก","ยากมาก"].map(v=>`<option ${item.difficulty===v?"selected":""}>${v}</option>`).join("")}</select></div></div>
       <div class="mt-5"><label class="block text-[13px] font-bold mb-2">คำอธิบายเฉลย</label><textarea name="explanation" rows="4" class="w-full p-4 border rounded-xl outline-none focus:border-pink-500">${esc(item.explanation||"")}</textarea></div>
       <div id="question-error" class="hidden mt-4 p-3 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold"></div>
       <div class="flex justify-between mt-6 pt-5 border-t"><button type="button" id="modal-delete" class="h-10 px-4 text-red-500 font-bold">ลบคำถาม</button><div class="flex gap-3"><button type="button" data-close-question class="h-10 px-5 rounded-xl border font-bold">ยกเลิก</button><button id="save-question" class="h-10 px-6 rounded-xl bg-pink-500 text-white font-bold">บันทึกการแก้ไข</button></div></div>`;
+    refreshOptionRows();
     modal.classList.remove("hidden"); modal.classList.add("flex"); form.elements.questionText.focus();
   }
   function closeModal(){modal.classList.add("hidden");modal.classList.remove("flex");editing=null}
   async function removeQuestion(){if(!editing||!confirm("ยืนยันการลบคำถามข้อนี้?"))return;await api(`exams-api?entity=question&id=${encodeURIComponent(editing.id)}`,{method:"DELETE"});const exam=exams.find(e=>e.id===examId);if(exam)exam.questionCount=Math.max(0,exam.questionCount-1);closeModal();summary();await openExam(examId,false)}
-  form.onsubmit=async event=>{event.preventDefault();const data=new FormData(form),options=editing.options.map((_,i)=>String(data.get(`option_${i}`)||"").trim()),error=$("question-error"),save=$("save-question");if(options.some(v=>!v)){error.textContent="กรุณากรอกตัวเลือกให้ครบ";error.classList.remove("hidden");return}save.disabled=true;try{await api("exams-api",{method:"PATCH",body:JSON.stringify({entity:"question",id:editing.id,questionText:data.get("questionText"),options,correctAnswer:Number(data.get("correctAnswer")),skill:data.get("skill"),difficulty:data.get("difficulty"),explanation:data.get("explanation")})});closeModal();await openExam(examId,false)}catch(err){error.textContent=err.message;error.classList.remove("hidden")}finally{save.disabled=false}};
+  form.onclick=event=>{
+    if(event.target.closest("[data-add-option]")){
+      $("option-editor").insertAdjacentHTML("beforeend",optionRow());refreshOptionRows();
+      $("option-editor").lastElementChild.querySelector('[name="option"]').focus();return;
+    }
+    const remove=event.target.closest("[data-remove-option]");
+    if(remove){
+      const rows=form.querySelectorAll("[data-option-row]");
+      if(rows.length<=2){const error=$("question-error");error.textContent="ต้องมีตัวเลือกอย่างน้อย 2 ตัวเลือก";error.classList.remove("hidden");return;}
+      const wasCorrect=remove.closest("[data-option-row]").querySelector('[name="correctAnswer"]').checked;
+      remove.closest("[data-option-row]").remove();refreshOptionRows();
+      if(wasCorrect)form.querySelector('[name="correctAnswer"]').checked=true;
+    }
+  };
+  form.onsubmit=async event=>{event.preventDefault();const data=new FormData(form),options=data.getAll("option").map(value=>String(value).trim()),error=$("question-error"),save=$("save-question");if(options.length<2||options.some(v=>!v)){error.textContent="กรุณากรอกตัวเลือกให้ครบอย่างน้อย 2 ตัวเลือก";error.classList.remove("hidden");return}save.disabled=true;try{await api("exams-api",{method:"PATCH",body:JSON.stringify({entity:"question",id:editing.id,questionText:data.get("questionText"),options,correctAnswer:Number(data.get("correctAnswer")),skill:data.get("skill"),difficulty:data.get("difficulty"),explanation:data.get("explanation")})});closeModal();await openExam(examId,false)}catch(err){error.textContent=err.message;error.classList.remove("hidden")}finally{save.disabled=false}};
   modal.onclick=event=>{if(event.target===modal||event.target.closest("[data-close-question]"))closeModal();if(event.target.closest("#modal-delete"))removeQuestion()};
   box.onclick=event=>{const button=event.target.closest("[data-open]");if(button)openExam(button.dataset.open)};
   tbody.onclick=event=>{const button=event.target.closest("[data-edit]");if(button)openEditor(questions.find(q=>q.id===button.dataset.edit))};

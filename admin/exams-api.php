@@ -219,7 +219,12 @@ try {
             $questionText = trim((string) ($body['questionText'] ?? ''));
             $options = $body['options'] ?? [];
             $correctAnswer = (int) ($body['correctAnswer'] ?? -1);
-            if ($id < 1 || $questionText === '' || !is_array($options) || count($options) < 2 ||
+            if (is_array($options)) {
+                $options = array_map(static fn(mixed $option): string => trim((string) $option), array_values($options));
+            }
+            if ($id < 1 || $questionText === '' || mb_strlen($questionText) > 10000 || !is_array($options) ||
+                count($options) < 2 || count($options) > 10 || in_array('', $options, true) ||
+                array_filter($options, static fn(string $option): bool => mb_strlen($option) > 2000) ||
                 $correctAnswer < 0 || $correctAnswer >= count($options)) {
                 respond(['error' => 'ข้อมูลคำถามไม่ถูกต้อง'], 422);
             }
@@ -230,7 +235,7 @@ try {
             );
             $stmt->execute([
                 ':question_text' => $questionText,
-                ':options' => json_encode(array_values($options), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                ':options' => json_encode($options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 ':correct_answer' => $correctAnswer,
                 ':explanation' => trim((string) ($body['explanation'] ?? '')) ?: null,
                 ':skill' => trim((string) ($body['skill'] ?? '')) ?: null,
