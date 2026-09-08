@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/db.php';
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { http_response_code(404); exit; }
 $data = json_decode(file_get_contents('php://input'), true);
 $token = (string)($data['token'] ?? '');
-if (!hash_equals('81e405290a1fbcaba21503039811647e4f45b544eaba632b8f7c51fea1622378', hash('sha256', $token))) { http_response_code(403); exit; }
+if (!hash_equals('a286dceb450b0d65a8d4030a7954c443e876d5c893a92e2357318b4a8e798219', hash('sha256', $token))) { http_response_code(403); exit; }
 $password = (string)($data['password'] ?? '');
 if (strlen($password) < 14) { http_response_code(422); exit; }
 $email = 'admin@nextbeyond.com';
