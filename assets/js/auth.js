@@ -131,7 +131,7 @@
     const title = root.querySelector("[data-reset-title]");
     const description = root.querySelector("[data-reset-description]");
     if (title) title.textContent = "ลืมรหัสผ่าน";
-    if (description) description.textContent = "กรอกอีเมลที่ใช้สมัครเพื่อขอลิงก์ตั้งรหัสผ่านใหม่";
+    if (description) description.textContent = "กรอกอีเมลที่ใช้สมัคร แล้วตั้งรหัสผ่านใหม่ได้ทันที";
     if (resetDialog && !resetDialog.open) resetDialog.showModal();
   });
   root.querySelector("[data-action='close-reset']")?.addEventListener("click", () => resetDialog?.close());
@@ -145,7 +145,7 @@
       if (result.resetToken) {
         showNewPasswordForm(result.resetToken);
       } else {
-        setResetStatus(result.message || "หากอีเมลถูกต้อง ระบบจะส่งขั้นตอนการตั้งรหัสผ่านใหม่ให้");
+        setResetStatus(result.message || "กรุณาตรวจสอบอีเมลแล้วลองใหม่");
       }
     } catch (error) {
       setResetStatus(error.message, true);

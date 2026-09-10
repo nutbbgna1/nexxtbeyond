@@ -383,7 +383,7 @@ include 'includes/header.php';
       <div class="flex items-start justify-between gap-4 mb-5">
         <div>
           <h2 class="text-[20px] font-bold text-navy-950 mb-1" data-reset-title>ลืมรหัสผ่าน</h2>
-          <p class="text-[13px] text-[#65738a] mb-0" data-reset-description>กรอกอีเมลที่ใช้สมัครเพื่อขอลิงก์ตั้งรหัสผ่านใหม่</p>
+          <p class="text-[13px] text-[#65738a] mb-0" data-reset-description>กรอกอีเมลที่ใช้สมัคร แล้วตั้งรหัสผ่านใหม่ได้ทันที</p>
         </div>
         <button type="button" class="w-9 h-9 shrink-0 rounded-lg border border-[#dce4ef] text-[#65738a] hover:text-navy-950" aria-label="ปิด" data-action="close-reset">&#10005;</button>
       </div>

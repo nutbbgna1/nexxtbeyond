@@ -98,32 +98,34 @@ try {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             authRespond(['error' => 'กรุณากรอกอีเมลให้ถูกต้อง'], 422);
         }
-        $message = 'หากอีเมลนี้มีบัญชีอยู่ ระบบจะส่งขั้นตอนการตั้งรหัสผ่านใหม่ให้';
         $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND is_active = 1 LIMIT 1');
         $stmt->execute([':email' => $email]);
         $userId = (int) ($stmt->fetchColumn() ?: 0);
-        $response = ['success' => true, 'message' => $message];
-        if ($userId > 0) {
-            $limit = $pdo->prepare('SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = :user_id AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
-            $limit->execute([':user_id' => $userId]);
-            if ((int) $limit->fetchColumn() < 5) {
-                $token = bin2hex(random_bytes(32));
-                $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => $userId]);
-                $insert = $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, requested_ip, expires_at) VALUES (:user_id, :token_hash, :requested_ip, DATE_ADD(NOW(), INTERVAL 30 MINUTE))');
-                $insert->execute([
-                    ':user_id' => $userId,
-                    ':token_hash' => hash('sha256', $token),
-                    ':requested_ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45) ?: null,
-                ]);
-                // Local XAMPP has no mail transport; expose the one-time token only to localhost.
-                if (isLocalRequest()) {
-                    $response['resetToken'] = $token;
-                }
-            }
-        } else {
+
+        if ($userId <= 0) {
             password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+            authRespond(['error' => 'ไม่พบบัญชีที่ใช้อีเมลนี้'], 404);
         }
-        authRespond($response);
+
+        $limit = $pdo->prepare('SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = :user_id AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
+        $limit->execute([':user_id' => $userId]);
+        if ((int) $limit->fetchColumn() >= 5) {
+            authRespond(['error' => 'ขอรีเซ็ตรหัสผ่านบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่'], 429);
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => $userId]);
+        $insert = $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, requested_ip, expires_at) VALUES (:user_id, :token_hash, :requested_ip, DATE_ADD(NOW(), INTERVAL 30 MINUTE))');
+        $insert->execute([
+            ':user_id' => $userId,
+            ':token_hash' => hash('sha256', $token),
+            ':requested_ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45) ?: null,
+        ]);
+        authRespond([
+            'success' => true,
+            'message' => 'ตั้งรหัสผ่านใหม่ได้เลย',
+            'resetToken' => $token,
+        ]);
     }
 
     if ($action === 'resetPassword') {
