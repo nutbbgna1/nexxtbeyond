@@ -107,12 +107,6 @@ try {
             authRespond(['error' => 'ไม่พบบัญชีที่ใช้อีเมลนี้'], 404);
         }
 
-        $limit = $pdo->prepare('SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = :user_id AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
-        $limit->execute([':user_id' => $userId]);
-        if ((int) $limit->fetchColumn() >= 5) {
-            authRespond(['error' => 'ขอรีเซ็ตรหัสผ่านบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่'], 429);
-        }
-
         $token = bin2hex(random_bytes(32));
         $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => $userId]);
         $insert = $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, requested_ip, expires_at) VALUES (:user_id, :token_hash, :requested_ip, DATE_ADD(NOW(), INTERVAL 30 MINUTE))');
