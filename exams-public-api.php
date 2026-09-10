@@ -13,7 +13,7 @@ try {
          ORDER BY updated_at DESC, created_at DESC, id DESC"
     );
     $questionStmt = $pdo->prepare(
-        'SELECT id, sort_order, question_text, options, correct_answer
+        'SELECT id, sort_order, question_text, image_url, options, correct_answer
          FROM exam_questions WHERE exam_id = :exam_id ORDER BY sort_order, id'
     );
     $exams = [];
@@ -25,6 +25,7 @@ try {
                 'id' => (string) $row['id'],
                 'sortOrder' => (int) $row['sort_order'],
                 'questionText' => $row['question_text'],
+                'imageUrl' => $row['image_url'],
                 'options' => is_array($options) ? $options : [],
                 'correctAnswer' => (int) $row['correct_answer'],
             ];

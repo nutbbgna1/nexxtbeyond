@@ -43,6 +43,22 @@ function ensureAuthSchema(PDO $pdo): void
             $pdo->exec("ALTER TABLE `users` {$definition}");
         }
     }
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+        `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        `user_id` INT NOT NULL,
+        `token_hash` CHAR(64) NOT NULL UNIQUE,
+        `requested_ip` VARCHAR(45) NULL,
+        `expires_at` DATETIME NOT NULL,
+        `used_at` DATETIME NULL,
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX `idx_password_reset_user` (`user_id`, `created_at`),
+        CONSTRAINT `fk_password_reset_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
+function isLocalRequest(): bool
+{
+    return in_array((string) ($_SERVER['REMOTE_ADDR'] ?? ''), ['127.0.0.1', '::1'], true);
 }
 
 try {
@@ -76,6 +92,66 @@ try {
 
     $data = authBody();
     $action = (string) ($data['action'] ?? '');
+
+    if ($action === 'forgotPassword') {
+        $email = strtolower(trim((string) ($data['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            authRespond(['error' => 'กรุณากรอกอีเมลให้ถูกต้อง'], 422);
+        }
+        $message = 'หากอีเมลนี้มีบัญชีอยู่ ระบบจะส่งขั้นตอนการตั้งรหัสผ่านใหม่ให้';
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND is_active = 1 LIMIT 1');
+        $stmt->execute([':email' => $email]);
+        $userId = (int) ($stmt->fetchColumn() ?: 0);
+        $response = ['success' => true, 'message' => $message];
+        if ($userId > 0) {
+            $limit = $pdo->prepare('SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = :user_id AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
+            $limit->execute([':user_id' => $userId]);
+            if ((int) $limit->fetchColumn() < 5) {
+                $token = bin2hex(random_bytes(32));
+                $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => $userId]);
+                $insert = $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, requested_ip, expires_at) VALUES (:user_id, :token_hash, :requested_ip, DATE_ADD(NOW(), INTERVAL 30 MINUTE))');
+                $insert->execute([
+                    ':user_id' => $userId,
+                    ':token_hash' => hash('sha256', $token),
+                    ':requested_ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45) ?: null,
+                ]);
+                // Local XAMPP has no mail transport; expose the one-time token only to localhost.
+                if (isLocalRequest()) {
+                    $response['resetToken'] = $token;
+                }
+            }
+        } else {
+            password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+        }
+        authRespond($response);
+    }
+
+    if ($action === 'resetPassword') {
+        $token = trim((string) ($data['token'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        $confirmPassword = (string) ($data['confirmPassword'] ?? '');
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            authRespond(['error' => 'ลิงก์ตั้งรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'], 422);
+        }
+        if ($password !== $confirmPassword || strlen($password) < 8 || !preg_match('/[a-z]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
+            authRespond(['error' => 'รหัสผ่านต้องตรงกัน มีอย่างน้อย 8 ตัว พร้อมตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข'], 422);
+        }
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('SELECT id, user_id FROM password_reset_tokens WHERE token_hash = :token_hash AND used_at IS NULL AND expires_at > NOW() LIMIT 1 FOR UPDATE');
+        $stmt->execute([':token_hash' => hash('sha256', $token)]);
+        $reset = $stmt->fetch();
+        if (!$reset) {
+            $pdo->rollBack();
+            authRespond(['error' => 'ลิงก์ตั้งรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'], 422);
+        }
+        $pdo->prepare('UPDATE users SET password_hash = :password_hash WHERE id = :user_id AND is_active = 1')->execute([
+            ':password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            ':user_id' => (int) $reset['user_id'],
+        ]);
+        $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => (int) $reset['user_id']]);
+        $pdo->commit();
+        authRespond(['success' => true, 'message' => 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว']);
+    }
 
     if ($action === 'login') {
         $identity = trim((string) ($data['identity'] ?? ''));

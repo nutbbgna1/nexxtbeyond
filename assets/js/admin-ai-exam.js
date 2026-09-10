@@ -161,6 +161,35 @@ function updateTotal() {
     document.getElementById('total-levels').innerText = e + m + h + ex;
 }
 
+async function generateExamImages(questions, subject) {
+    const jobs = questions.map((question, index) => ({ question, index }))
+        .filter(job => String(job.question.imagePrompt || '').trim());
+    if (!jobs.length) return;
+    const detail = document.getElementById('generation-detail');
+    let finished = 0;
+    const worker = async () => {
+        while (jobs.length) {
+            const { question } = jobs.shift();
+            try {
+                const response = await fetch('../admin/ai-image-api.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: question.imagePrompt, context: { subject, style: 'clean educational textbook illustration' } }),
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'สร้างภาพไม่สำเร็จ');
+                question.imageUrl = data.image.url;
+                question.imageModel = data.image.model;
+            } catch (error) {
+                question.imageError = error.message;
+            } finally {
+                finished += 1;
+                if (detail) detail.textContent = `สร้างภาพประกอบแล้ว ${finished} / ${finished + jobs.length}`;
+            }
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(2, jobs.length) }, worker));
+}
+
 // ---------- Form Submit — Generate ----------
 async function handleGenerate(e) {
     e.preventDefault();
@@ -238,6 +267,11 @@ async function handleGenerate(e) {
         answers     = {};
         isRevealed  = false;
 
+        if (document.getElementById('generateImages').checked) {
+            document.getElementById('generation-title').textContent = 'กำลังสร้างภาพประกอบ...';
+            await generateExamImages(currentExam, subject);
+        }
+
         // ── บันทึกลง Database อัตโนมัติ ──
         try {
             const saveRes = await fetch('../admin/exams-api', {
@@ -280,6 +314,8 @@ async function handleGenerate(e) {
     } catch (error) {
         alert('Error: ' + error.message);
     } finally {
+        document.getElementById('generation-title').textContent = 'กำลังให้ AI สร้างข้อสอบ...';
+        document.getElementById('generation-detail').textContent = 'กำลังรวบรวมข้อสอบคุณภาพสูงตามระดับความยาก';
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
         submitBtn.disabled = false;
@@ -296,7 +332,9 @@ function renderExam() {
         const qDiv      = document.createElement('div');
         qDiv.className  = 'bg-white rounded-[20px] shadow-[0_4px_24px_rgba(15,42,83,0.03)] border border-[#e8ecf2] p-6';
 
-        let html = `<div class="text-[16px] font-bold text-navy-950 mb-5 whitespace-pre-wrap leading-relaxed"><span class="font-black mr-2 text-pink-500">ข้อ ${qIndex + 1}.</span>${q.questionText}</div><div class="space-y-3">`;
+        let html = `<div class="text-[16px] font-bold text-navy-950 mb-5 whitespace-pre-wrap leading-relaxed"><span class="font-black mr-2 text-pink-500">ข้อ ${qIndex + 1}.</span>${escapeHtml(q.questionText)}</div>`;
+        if (q.imageUrl) html += `<img src="${escapeHtml(q.imageUrl)}" alt="ภาพประกอบข้อ ${qIndex + 1}" class="w-full max-h-[420px] object-contain bg-[#f8fafc] border border-[#e8ecf2] rounded-xl mb-5" loading="lazy">`;
+        html += '<div class="space-y-3">';
 
         q.options.forEach((opt, oIndex) => {
             const isSelected     = answers[qIndex] === oIndex;
@@ -326,7 +364,7 @@ function renderExam() {
                 }
             }
 
-            html += `<div class="${optClass}" onclick="selectOption(${qIndex}, ${oIndex})"><div class="${markerClass}">${markerInner}</div><span class="flex-1 text-[14px] font-medium leading-snug ${isRevealed && isActualAnswer ? 'text-[#166534]' : 'text-navy-950'}">${opt}</span></div>`;
+            html += `<div class="${optClass}" onclick="selectOption(${qIndex}, ${oIndex})"><div class="${markerClass}">${markerInner}</div><span class="flex-1 text-[14px] font-medium leading-snug ${isRevealed && isActualAnswer ? 'text-[#166534]' : 'text-navy-950'}">${escapeHtml(opt)}</span></div>`;
         });
 
         html += '</div>';

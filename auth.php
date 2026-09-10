@@ -3,7 +3,7 @@ $pageTitle = "เข้าสู่ระบบ / สมัครสมาชิ
 $pageDesc = "เข้าสู่ระบบหรือสมัครบัญชีนักเรียนใหม่กับ Next Beyond Academy";
 $currentPage = 'auth.php';
 $authScriptVersion = (string) filemtime(__DIR__ . '/assets/js/auth.js');
-$extraHead = '<script defer src="assets/js/auth.js?v=' . $authScriptVersion . '"></script>';
+$extraHead = '<meta name="referrer" content="no-referrer"><script defer src="assets/js/auth.js?v=' . $authScriptVersion . '"></script>';
 include 'includes/head.php';
 include 'includes/header.php';
 ?>
@@ -60,7 +60,7 @@ include 'includes/header.php';
             <label class="flex items-center gap-2 text-[13px] text-[#65738a] cursor-pointer">
               <input type="checkbox" class="w-4 h-4 rounded border-[#dce4ef] accent-pink-500"> จดจำฉัน
             </label>
-            <a href="#" class="text-[13px] text-[#2369dd] font-medium hover:underline">ลืมรหัสผ่าน?</a>
+            <button type="button" class="text-[13px] text-[#2369dd] font-medium hover:underline" data-action="forgot-password">ลืมรหัสผ่าน?</button>
           </div>
           <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] shadow-[0_8px_20px_rgba(231,45,130,.2)] transition-transform hover:-translate-y-0.5 mb-4" data-action="login">เข้าสู่ระบบ</button>
           <div class="text-center text-[13px] text-[#94a3b8] mb-4 hidden">หรือ</div>
@@ -377,6 +377,36 @@ include 'includes/header.php';
       <p class="text-[12px] text-[#94a3b8] mt-6">บัญชีนี้ใช้เข้าสู่ระบบและดูประวัติคะแนนของนักเรียนได้</p>
     </div>
   </section>
+
+  <dialog class="w-[calc(100%_-_2rem)] max-w-[440px] rounded-[18px] border border-[#dce4ef] bg-white p-0 shadow-[0_24px_70px_rgba(15,42,83,.22)] backdrop:bg-[#0f172a]/50" data-reset-dialog>
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h2 class="text-[20px] font-bold text-navy-950 mb-1" data-reset-title>ลืมรหัสผ่าน</h2>
+          <p class="text-[13px] text-[#65738a] mb-0" data-reset-description>กรอกอีเมลที่ใช้สมัครเพื่อขอลิงก์ตั้งรหัสผ่านใหม่</p>
+        </div>
+        <button type="button" class="w-9 h-9 shrink-0 rounded-lg border border-[#dce4ef] text-[#65738a] hover:text-navy-950" aria-label="ปิด" data-action="close-reset">&#10005;</button>
+      </div>
+
+      <form data-reset-request-form>
+        <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-email">อีเมล</label>
+        <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] focus:shadow-[0_0_0_3px_rgba(57,129,245,.14)] text-[15px] mb-4" type="email" id="reset-email" autocomplete="email" required placeholder="example@email.com">
+        <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">ขอลิงก์ตั้งรหัสผ่านใหม่</button>
+      </form>
+
+      <form class="hidden" data-reset-password-form>
+        <input type="hidden" data-reset-token>
+        <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-password">รหัสผ่านใหม่</label>
+        <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-4" type="password" id="reset-password" autocomplete="new-password" minlength="8" required>
+        <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-password-confirm">ยืนยันรหัสผ่านใหม่</label>
+        <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-2" type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" required>
+        <p class="text-[12px] text-[#65738a] mb-4">อย่างน้อย 8 ตัว มีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข</p>
+        <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">บันทึกรหัสผ่านใหม่</button>
+      </form>
+
+      <div class="hidden mt-4 rounded-xl border px-4 py-3 text-[13px]" role="status" aria-live="polite" data-reset-status></div>
+    </div>
+  </dialog>
 
 </main>
 

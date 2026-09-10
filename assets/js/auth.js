@@ -94,6 +94,91 @@
     return data;
   }
 
+  const resetDialog = root.querySelector("[data-reset-dialog]");
+  const resetRequestForm = root.querySelector("[data-reset-request-form]");
+  const resetPasswordForm = root.querySelector("[data-reset-password-form]");
+  const resetStatus = root.querySelector("[data-reset-status]");
+
+  function setResetStatus(message, isError = false) {
+    if (!resetStatus) return;
+    resetStatus.textContent = message;
+    resetStatus.classList.remove("hidden", "border-[#fecdd3]", "bg-[#fff1f2]", "text-[#be123c]", "border-[#bbf7d0]", "bg-[#f0fdf4]", "text-[#166534]");
+    resetStatus.classList.add(...(isError
+      ? ["border-[#fecdd3]", "bg-[#fff1f2]", "text-[#be123c]"]
+      : ["border-[#bbf7d0]", "bg-[#f0fdf4]", "text-[#166534]"]));
+  }
+
+  function showNewPasswordForm(token) {
+    resetRequestForm?.classList.add("hidden");
+    resetPasswordForm?.classList.remove("hidden");
+    const tokenInput = root.querySelector("[data-reset-token]");
+    if (tokenInput) tokenInput.value = token;
+    const title = root.querySelector("[data-reset-title]");
+    const description = root.querySelector("[data-reset-description]");
+    if (title) title.textContent = "ตั้งรหัสผ่านใหม่";
+    if (description) description.textContent = "ตั้งรหัสใหม่สำหรับบัญชีของคุณ";
+    resetStatus?.classList.add("hidden");
+    if (resetDialog && !resetDialog.open) resetDialog.showModal();
+  }
+
+  root.querySelector("[data-action='forgot-password']")?.addEventListener("click", () => {
+    const loginEmail = root.querySelector("#login-email")?.value.trim() || "";
+    const resetEmail = root.querySelector("#reset-email");
+    if (resetEmail) resetEmail.value = loginEmail;
+    resetRequestForm?.classList.remove("hidden");
+    resetPasswordForm?.classList.add("hidden");
+    resetStatus?.classList.add("hidden");
+    const title = root.querySelector("[data-reset-title]");
+    const description = root.querySelector("[data-reset-description]");
+    if (title) title.textContent = "ลืมรหัสผ่าน";
+    if (description) description.textContent = "กรอกอีเมลที่ใช้สมัครเพื่อขอลิงก์ตั้งรหัสผ่านใหม่";
+    if (resetDialog && !resetDialog.open) resetDialog.showModal();
+  });
+  root.querySelector("[data-action='close-reset']")?.addEventListener("click", () => resetDialog?.close());
+
+  resetRequestForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const submit = resetRequestForm.querySelector("button[type='submit']");
+    try {
+      submit.disabled = true;
+      const result = await callAuthApi({ action: "forgotPassword", email: root.querySelector("#reset-email")?.value.trim() || "" });
+      if (result.resetToken) {
+        showNewPasswordForm(result.resetToken);
+      } else {
+        setResetStatus(result.message || "หากอีเมลถูกต้อง ระบบจะส่งขั้นตอนการตั้งรหัสผ่านใหม่ให้");
+      }
+    } catch (error) {
+      setResetStatus(error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  resetPasswordForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const password = root.querySelector("#reset-password")?.value || "";
+    const confirmPassword = root.querySelector("#reset-password-confirm")?.value || "";
+    const submit = resetPasswordForm.querySelector("button[type='submit']");
+    if (password !== confirmPassword) return setResetStatus("รหัสผ่านทั้งสองช่องไม่ตรงกัน", true);
+    if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+      return setResetStatus("รหัสผ่านต้องมีอย่างน้อย 8 ตัว และมีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข", true);
+    }
+    try {
+      submit.disabled = true;
+      await callAuthApi({ action: "resetPassword", token: root.querySelector("[data-reset-token]")?.value || "", password, confirmPassword });
+      setResetStatus("ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว ปิดหน้าต่างนี้แล้วเข้าสู่ระบบได้เลย");
+      resetPasswordForm.reset();
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (error) {
+      setResetStatus(error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  const resetTokenFromUrl = new URLSearchParams(window.location.search).get("reset");
+  if (resetTokenFromUrl) showNewPasswordForm(resetTokenFromUrl);
+
   const registerBtn = root.querySelector('[data-goto="success"]');
   registerBtn?.addEventListener("click", async () => {
     root.querySelectorAll("input[data-field], select[data-field], textarea[data-field]").forEach(input => {

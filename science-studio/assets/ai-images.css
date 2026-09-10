@@ -1,0 +1,43 @@
+.lesson-illustration {
+  margin: 24px 0;
+}
+
+.lesson-illustration img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  background: #f7f9fb;
+  border: 1px solid #dfe5eb;
+  border-radius: 6px;
+}
+
+.lesson-illustration figcaption {
+  margin-top: 7px;
+  color: #798592;
+  font-size: 11px;
+}
+
+.image-alert {
+  align-items: flex-start;
+  background: #f8fbff;
+  border: 1px solid #d7e6f8;
+  border-radius: 6px;
+  color: #425166;
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 22px;
+  padding: 13px 14px;
+}
+
+.image-alert strong,
+.image-alert small {
+  display: block;
+}
+
+.image-alert small {
+  color: #738195;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 2px;
+}
