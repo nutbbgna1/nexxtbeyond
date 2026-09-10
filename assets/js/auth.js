@@ -160,8 +160,8 @@
     const confirmPassword = root.querySelector("#reset-password-confirm")?.value || "";
     const submit = resetPasswordForm.querySelector("button[type='submit']");
     if (password !== confirmPassword) return setResetStatus("รหัสผ่านทั้งสองช่องไม่ตรงกัน", true);
-    if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
-      return setResetStatus("รหัสผ่านต้องมีอย่างน้อย 8 ตัว และมีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข", true);
+    if (password.length < 8) {
+      return setResetStatus("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", true);
     }
     try {
       submit.disabled = true;

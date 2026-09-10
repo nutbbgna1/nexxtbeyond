@@ -135,8 +135,8 @@ try {
         if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
             authRespond(['error' => 'ลิงก์ตั้งรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'], 422);
         }
-        if ($password !== $confirmPassword || strlen($password) < 8 || !preg_match('/[a-z]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
-            authRespond(['error' => 'รหัสผ่านต้องตรงกัน มีอย่างน้อย 8 ตัว พร้อมตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข'], 422);
+        if ($password !== $confirmPassword || strlen($password) < 8) {
+            authRespond(['error' => 'รหัสผ่านต้องตรงกันและมีอย่างน้อย 8 ตัวอักษร'], 422);
         }
         $pdo->beginTransaction();
         $stmt = $pdo->prepare('SELECT id, user_id FROM password_reset_tokens WHERE token_hash = :token_hash AND used_at IS NULL AND expires_at > NOW() LIMIT 1 FOR UPDATE');

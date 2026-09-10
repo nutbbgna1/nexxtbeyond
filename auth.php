@@ -400,7 +400,7 @@ include 'includes/header.php';
         <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-4" type="password" id="reset-password" autocomplete="new-password" minlength="8" required>
         <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-password-confirm">ยืนยันรหัสผ่านใหม่</label>
         <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-2" type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" required>
-        <p class="text-[12px] text-[#65738a] mb-4">อย่างน้อย 8 ตัว มีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข</p>
+        <p class="text-[12px] text-[#65738a] mb-4">อย่างน้อย 8 ตัวอักษร</p>
         <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">บันทึกรหัสผ่านใหม่</button>
       </form>
 
