@@ -54,7 +54,12 @@ include 'includes/header.php';
           </div>
           <div class="mb-4">
             <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="login-password">รหัสผ่าน</label>
-            <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] focus:shadow-[0_0_0_3px_rgba(57,129,245,.14)] text-[15px]" type="password" id="login-password" placeholder="••••••••">
+            <div class="relative">
+              <input class="w-full h-12 pl-4 pr-12 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] focus:shadow-[0_0_0_3px_rgba(57,129,245,.14)] text-[15px]" type="password" id="login-password" placeholder="••••••••">
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-lg text-[#65738a] hover:bg-[#f6f8fc] hover:text-navy-950" data-toggle-password="#login-password" aria-label="แสดงรหัสผ่าน" title="แสดงรหัสผ่าน">
+                <svg class="h-5 w-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6.5 9.9-6.5 9.9 6.5 9.9 6.5-3.6 6.5-9.9 6.5S2.1 12 2.1 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
           <div class="flex items-center justify-between mb-6">
             <label class="flex items-center gap-2 text-[13px] text-[#65738a] cursor-pointer">
@@ -289,8 +294,8 @@ include 'includes/header.php';
             <input class="w-full h-[42px] px-3.5 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[14px] mb-1" type="text" data-field="accountEmail" placeholder="parent@example.com">
             <p class="text-[12px] text-[#65738a] mb-4">ใช้สำหรับเข้าสู่ระบบและกู้คืนบัญชี ควรเป็นช่องทางที่ใช้งานได้จริง</p>
             <div class="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-              <div><label class="block mb-1.5 text-[13px] font-bold text-navy-900">รหัสผ่าน *</label><input class="w-full h-[42px] px-3.5 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[14px]" type="password" data-field="password" placeholder="••••••••"></div>
-              <div><label class="block mb-1.5 text-[13px] font-bold text-navy-900">ยืนยันรหัสผ่าน *</label><input class="w-full h-[42px] px-3.5 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[14px]" type="password" data-field="confirmPassword" placeholder="••••••••"></div>
+              <div><label class="block mb-1.5 text-[13px] font-bold text-navy-900">รหัสผ่าน *</label><div class="relative"><input class="w-full h-[42px] pl-3.5 pr-11 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[14px]" type="password" data-field="password" id="register-password" placeholder="••••••••"><button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-lg text-[#65738a] hover:bg-[#f6f8fc] hover:text-navy-950" data-toggle-password="#register-password" aria-label="แสดงรหัสผ่าน" title="แสดงรหัสผ่าน"><svg class="h-5 w-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6.5 9.9-6.5 9.9 6.5 9.9 6.5-3.6 6.5-9.9 6.5S2.1 12 2.1 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+              <div><label class="block mb-1.5 text-[13px] font-bold text-navy-900">ยืนยันรหัสผ่าน *</label><div class="relative"><input class="w-full h-[42px] pl-3.5 pr-11 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[14px]" type="password" data-field="confirmPassword" id="register-password-confirm" placeholder="••••••••"><button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-lg text-[#65738a] hover:bg-[#f6f8fc] hover:text-navy-950" data-toggle-password="#register-password-confirm" aria-label="แสดงรหัสผ่าน" title="แสดงรหัสผ่าน"><svg class="h-5 w-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6.5 9.9-6.5 9.9 6.5 9.9 6.5-3.6 6.5-9.9 6.5S2.1 12 2.1 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
             </div>
             <div class="mt-3 p-3 rounded-xl bg-[#f6f8fc] border border-[#e8ecf2]">
               <p class="text-[12px] text-[#65738a] mb-0">รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และประกอบด้วยตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข</p>
@@ -397,9 +402,19 @@ include 'includes/header.php';
       <form class="hidden" data-reset-password-form>
         <input type="hidden" data-reset-token>
         <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-password">รหัสผ่านใหม่</label>
-        <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-4" type="password" id="reset-password" autocomplete="new-password" minlength="8" required>
+        <div class="relative mb-4">
+          <input class="w-full h-12 pl-4 pr-12 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px]" type="password" id="reset-password" autocomplete="new-password" minlength="8" required>
+          <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-lg text-[#65738a] hover:bg-[#f6f8fc] hover:text-navy-950" data-toggle-password="#reset-password" aria-label="แสดงรหัสผ่าน" title="แสดงรหัสผ่าน">
+            <svg class="h-5 w-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6.5 9.9-6.5 9.9 6.5 9.9 6.5-3.6 6.5-9.9 6.5S2.1 12 2.1 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
         <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-password-confirm">ยืนยันรหัสผ่านใหม่</label>
-        <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px] mb-2" type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" required>
+        <div class="relative mb-2">
+          <input class="w-full h-12 pl-4 pr-12 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] text-[15px]" type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" required>
+          <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-lg text-[#65738a] hover:bg-[#f6f8fc] hover:text-navy-950" data-toggle-password="#reset-password-confirm" aria-label="แสดงรหัสผ่าน" title="แสดงรหัสผ่าน">
+            <svg class="h-5 w-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6.5 9.9-6.5 9.9 6.5 9.9 6.5-3.6 6.5-9.9 6.5S2.1 12 2.1 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
         <p class="text-[12px] text-[#65738a] mb-4">อย่างน้อย 8 ตัวอักษร</p>
         <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">บันทึกรหัสผ่านใหม่</button>
       </form>

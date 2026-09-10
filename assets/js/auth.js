@@ -99,6 +99,18 @@
   const resetPasswordForm = root.querySelector("[data-reset-password-form]");
   const resetStatus = root.querySelector("[data-reset-status]");
 
+  root.querySelectorAll("[data-toggle-password]").forEach(button => {
+    button.addEventListener("click", () => {
+      const input = root.querySelector(button.dataset.togglePassword || "");
+      if (!input) return;
+      const showPassword = input.type === "password";
+      input.type = showPassword ? "text" : "password";
+      const label = showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน";
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
+    });
+  });
+
   function setResetStatus(message, isError = false) {
     if (!resetStatus) return;
     resetStatus.textContent = message;
