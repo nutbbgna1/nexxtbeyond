@@ -396,7 +396,7 @@ include 'includes/header.php';
       <form data-reset-request-form>
         <label class="block mb-1.5 text-[14px] font-bold text-navy-900" for="reset-email">อีเมล</label>
         <input class="w-full h-12 px-4 border border-[#dce4ef] rounded-xl text-navy-950 bg-white outline-none focus:border-[#3981f5] focus:shadow-[0_0_0_3px_rgba(57,129,245,.14)] text-[15px] mb-4" type="email" id="reset-email" autocomplete="email" required placeholder="example@email.com">
-        <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">ขอลิงก์ตั้งรหัสผ่านใหม่</button>
+        <button class="w-full h-12 rounded-xl bg-pink-500 text-white font-bold text-[15px] disabled:opacity-60" type="submit">ตั้งรหัสผ่านใหม่</button>
       </form>
 
       <form class="hidden" data-reset-password-form>
