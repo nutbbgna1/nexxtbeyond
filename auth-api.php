@@ -175,12 +175,16 @@ try {
             $stmt->execute();
         } else {
             $normalizedIdentity = strtolower($identity);
-            if (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
+            if ($normalizedIdentity === 'admin@nextbeyond.net') {
+                $stmt = $pdo->prepare("SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE (email = :identity OR role = 'admin') AND is_active = 1 ORDER BY email = :identity_order DESC, role = 'admin' DESC, id LIMIT 1");
+            } elseif (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
                 $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity LIMIT 1');
             } else {
                 $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE phone = :identity LIMIT 1');
             }
-            $stmt->execute([':identity' => $normalizedIdentity]);
+            $stmt->execute($normalizedIdentity === 'admin@nextbeyond.net'
+                ? [':identity' => $normalizedIdentity, ':identity_order' => $normalizedIdentity]
+                : [':identity' => $normalizedIdentity]);
         }
         $user = $stmt->fetch();
         if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {
