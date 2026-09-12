@@ -17,6 +17,35 @@ if ($where !== '') $params[':status'] = $status;
 $stmt->execute($params);
 $courses = $stmt->fetchAll();
 
+$courseLessonStats = [];
+$nextLessonByCourse = [];
+if ($courses) {
+    $courseIds = array_map(static fn(array $course): int => (int)$course['id'], $courses);
+    $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
+    $lessonStatsStmt = $pdo->prepare(
+        "SELECT l.course_id, COUNT(l.id) AS total_lessons,
+                SUM(CASE WHEN lp.is_completed = 1 THEN 1 ELSE 0 END) AS completed_lessons
+         FROM lessons l
+         LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.user_id = ?
+         WHERE l.course_id IN ({$placeholders}) GROUP BY l.course_id"
+    );
+    $lessonStatsStmt->execute(array_merge([(int)$currentUser['id']], $courseIds));
+    foreach ($lessonStatsStmt->fetchAll() as $row) $courseLessonStats[(int)$row['course_id']] = $row;
+
+    $nextLessonsStmt = $pdo->prepare(
+        "SELECT l.course_id, l.id, l.title, l.sort_order
+         FROM lessons l
+         LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.user_id = ?
+         WHERE l.course_id IN ({$placeholders}) AND COALESCE(lp.is_completed, 0) = 0
+         ORDER BY l.course_id, l.sort_order, l.id"
+    );
+    $nextLessonsStmt->execute(array_merge([(int)$currentUser['id']], $courseIds));
+    foreach ($nextLessonsStmt->fetchAll() as $lesson) {
+        $courseId = (int)$lesson['course_id'];
+        if (!isset($nextLessonByCourse[$courseId])) $nextLessonByCourse[$courseId] = $lesson;
+    }
+}
+
 $summaryStmt = $pdo->prepare("SELECT COUNT(*) AS total,
     SUM(status='active') AS active_count,
     SUM(status='completed') AS completed_count,
@@ -26,6 +55,19 @@ $summaryStmt->execute([':user_id' => $currentUser['id']]);
 $summary = $summaryStmt->fetch() ?: [];
 $filters = ['' => 'ทั้งหมด', 'active' => 'กำลังเรียน', 'completed' => 'เรียนจบ', 'expired' => 'หมดอายุ'];
 $statusLabels = ['active' => 'กำลังเรียน', 'completed' => 'เรียนจบแล้ว', 'expired' => 'หมดอายุ'];
+$mobileFilters = ['' => 'ทั้งหมด', 'active' => 'กำลังเรียน', 'completed' => 'เรียนจบ'];
+$heroCourse = $courses[0] ?? null;
+$mobileCourseList = count($courses) > 1 ? array_slice($courses, 1) : [];
+
+function studentCourseCode(string $subject, string $title): string {
+    $source = mb_strtolower($subject . ' ' . $title);
+    foreach ([
+        'คณิต' => 'MA', 'math' => 'MA', 'อังกฤษ' => 'EN', 'english' => 'EN',
+        'เคมี' => 'CH', 'chem' => 'CH', 'ฟิสิกส์' => 'PH', 'physics' => 'PH',
+        'ชีว' => 'BI', 'biology' => 'BI', 'วิทย' => 'SC', 'science' => 'SC',
+    ] as $word => $code) if (str_contains($source, $word)) return $code;
+    return mb_strtoupper(mb_substr(trim($subject ?: $title), 0, 2));
+}
 ?>
 <!doctype html>
 <html lang="th">
@@ -42,6 +84,61 @@ $statusLabels = ['active' => 'กำลังเรียน', 'completed' => '�
   <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="p-8 max-[640px]:p-4">
+      <section class="student-mobile-courses" aria-label="คอร์สของฉันบนมือถือ">
+        <header class="mobile-courses-intro">
+          <p>MY LEARNING</p>
+          <h1>คอร์สของฉัน</h1>
+          <span>เรียนต่อจากจุดล่าสุด</span>
+        </header>
+
+        <?php if ($heroCourse):
+          $heroId = (int)$heroCourse['id'];
+          $heroProgress = max(0, min(100, (int)round((float)$heroCourse['progress_percent'])));
+          $heroStats = $courseLessonStats[$heroId] ?? ['total_lessons' => 0, 'completed_lessons' => 0];
+          $heroNextLesson = $nextLessonByCourse[$heroId] ?? null;
+          $heroUrl = $heroNextLesson ? '../lesson.php?id=' . (int)$heroNextLesson['id'] : '../course-details?id=' . $heroId;
+        ?>
+          <article class="mobile-course-hero">
+            <div class="mobile-course-hero-copy">
+              <span class="mobile-course-status"><?= htmlspecialchars($statusLabels[$heroCourse['status']] ?? $heroCourse['status']) ?></span>
+              <h2><?= htmlspecialchars($heroCourse['title']) ?></h2>
+              <p><?= (int)$heroStats['total_lessons'] > 0 ? 'เรียนแล้ว ' . (int)$heroStats['completed_lessons'] . ' จาก ' . (int)$heroStats['total_lessons'] . ' บท' : 'เรียนแล้ว ' . $heroProgress . '%' ?></p>
+              <div class="mobile-course-progress"><i style="width:<?= $heroProgress ?>%"></i></div>
+              <a href="<?= htmlspecialchars($heroUrl) ?>">▶ เรียนต่อ</a>
+            </div>
+            <img src="../assets/images/next-owl.png" alt="มาสคอตนกฮูก Next Beyond">
+            <strong><?= htmlspecialchars(studentCourseCode((string)$heroCourse['subject'], (string)$heroCourse['title'])) ?></strong>
+          </article>
+        <?php else: ?>
+          <article class="mobile-course-hero empty">
+            <div class="mobile-course-hero-copy"><span class="mobile-course-status">เริ่มต้นเรียน</span><h2>ค้นหาคอร์สที่ใช่สำหรับคุณ</h2><p>เลือกเรียนตามเป้าหมายและระดับของคุณ</p><a href="../courses">ดูคอร์สทั้งหมด</a></div>
+            <img src="../assets/images/next-owl.png" alt="มาสคอตนกฮูก Next Beyond">
+          </article>
+        <?php endif; ?>
+
+        <nav class="mobile-course-filters" aria-label="กรองคอร์ส">
+          <?php foreach ($mobileFilters as $key => $label): ?><a href="?status=<?= urlencode($key) ?>" class="<?= $status === $key ? 'active' : '' ?>"><?= htmlspecialchars($label) ?></a><?php endforeach; ?>
+        </nav>
+
+        <div class="mobile-course-list">
+          <?php foreach ($mobileCourseList as $course):
+            $courseId = (int)$course['id'];
+            $progress = max(0, min(100, (int)round((float)$course['progress_percent'])));
+            $nextLesson = $nextLessonByCourse[$courseId] ?? null;
+            $courseUrl = $nextLesson ? '../lesson.php?id=' . (int)$nextLesson['id'] : '../course-details?id=' . $courseId;
+          ?>
+            <a class="mobile-course-row" href="<?= htmlspecialchars($courseUrl) ?>">
+              <span class="mobile-course-code"><?= htmlspecialchars(studentCourseCode((string)$course['subject'], (string)$course['title'])) ?></span>
+              <span class="mobile-course-info"><b><?= htmlspecialchars($course['title']) ?></b><small><?= htmlspecialchars($course['subject'] ?: ($course['level'] ?: 'คอร์สออนไลน์')) ?></small><i><span style="width:<?= $progress ?>%"></span></i><em>เรียนแล้ว <?= $progress ?>%</em></span>
+              <span class="mobile-course-arrow">›</span>
+            </a>
+          <?php endforeach; ?>
+        </div>
+
+        <a class="mobile-find-courses" href="../courses">⌕&nbsp; ค้นหาคอร์สเพิ่มเติม</a>
+      </section>
+
+      <div class="student-courses-desktop">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">
         <p class="student-kicker mb-2">My learning</p>
         <div class="flex items-end justify-between gap-5 flex-wrap">
@@ -95,6 +192,7 @@ $statusLabels = ['active' => 'กำลังเรียน', 'completed' => '�
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
+      </div>
     </main>
     <?php include 'includes/bottom-nav.php'; ?>
   </div>

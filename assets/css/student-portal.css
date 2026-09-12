@@ -24,7 +24,7 @@
 #studentSidebar > div:last-child a:last-child { color:#ef4444 !important; }
 #studentSidebar > div:last-child a:last-child:hover { color:#ef4444 !important; background:#fef2f2 !important; }
 .student-topbar { min-height:64px; box-shadow:none !important; }
-.student-mobile-brand,.student-bottom-nav,.student-mobile-home { display:none; }
+.student-mobile-brand,.student-bottom-nav,.student-mobile-home,.student-mobile-courses { display:none; }
 .student-kicker { color:#8190a5; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
 .student-section-title { display:flex; align-items:center; gap:10px; }
 .student-section-title::before { content:""; width:3px; height:18px; background:var(--student-pink); border-radius:2px; }
@@ -106,6 +106,42 @@
   .mobile-week-days { display:flex; justify-content:space-between; margin-top:10px; }
   .mobile-week-days span { display:grid; width:27px; height:27px; place-items:center; border:1px solid #c1cce0; border-radius:50%; color:#657695; background:rgba(255,255,255,.55); font-size:9px; font-weight:800; }
   .mobile-week-days span.active { border-color:#ff168b; color:#fff; background:#ff168b; }
+
+  .student-courses-desktop { display:none !important; }
+  .student-mobile-courses { display:block; }
+  .mobile-courses-intro { margin:2px 6px 18px; }
+  .mobile-courses-intro p { margin:0 0 4px; color:#1548d8; font-size:13px; font-weight:900; letter-spacing:.08em; }
+  .mobile-courses-intro h1 { margin:0; color:#071936; font-size:30px; font-weight:900; line-height:1.12; letter-spacing:-.045em; }
+  .mobile-courses-intro span { display:block; margin-top:7px; color:#657695; font-size:14px; font-weight:600; }
+  .mobile-course-hero { position:relative; min-height:260px; overflow:hidden; padding:20px; border-radius:20px; color:#fff; background:linear-gradient(135deg,#061a40,#0b2d68 58%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.16); }
+  .mobile-course-hero::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 83% 12%,rgba(49,96,229,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.04) 23px 24px); pointer-events:none; }
+  .mobile-course-hero-copy { position:relative; z-index:3; width:64%; }
+  .mobile-course-status { display:inline-flex; padding:6px 11px; border:1px solid rgba(255,255,255,.35); border-radius:999px; color:#fff; background:rgba(255,255,255,.12); font-size:11px; font-weight:800; }
+  .mobile-course-hero h2 { display:-webkit-box; overflow:hidden; margin:17px 0 7px; color:#fff; font-size:24px; font-weight:900; line-height:1.2; letter-spacing:-.035em; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+  .mobile-course-hero p { margin:0; color:#dce8ff; font-size:14px; font-weight:700; }
+  .mobile-course-progress { height:7px; overflow:hidden; width:100%; margin:13px 0 0; border-radius:999px; background:rgba(255,255,255,.25); }
+  .mobile-course-progress i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ff168b,#ff58aa); }
+  .mobile-course-hero-copy > a { display:flex; align-items:center; justify-content:center; min-height:48px; width:100%; margin-top:19px; border-radius:15px; color:#fff; background:linear-gradient(135deg,#ff168b,#ed0878); box-shadow:0 9px 20px rgba(255,22,139,.25); font-size:15px; font-weight:900; text-decoration:none; }
+  .mobile-course-hero img { position:absolute; z-index:2; width:205px; height:205px; right:-32px; bottom:10px; object-fit:contain; filter:drop-shadow(0 13px 16px rgba(0,0,0,.4)); }
+  .mobile-course-hero > strong { position:absolute; z-index:4; right:30px; bottom:39px; display:grid; width:72px; height:72px; place-items:center; color:#fff; background:#ff168b; box-shadow:0 7px 18px rgba(6,26,64,.2); font-size:35px; font-weight:500; }
+  .mobile-course-hero.empty .mobile-course-hero-copy { width:68%; }
+  .mobile-course-hero.empty h2 { font-size:22px; }
+  .mobile-course-filters { display:flex; gap:7px; overflow-x:auto; margin:13px 0 22px; padding:0 0 2px; scrollbar-width:none; }
+  .mobile-course-filters::-webkit-scrollbar { display:none; }
+  .mobile-course-filters a { flex:none; min-width:90px; padding:11px 15px; border-radius:999px; color:#071936; background:#e8eeff; font-size:12px; font-weight:900; text-align:center; text-decoration:none; }
+  .mobile-course-filters a.active { color:#fff; background:#ff168b; }
+  .mobile-course-list { display:grid; gap:10px; }
+  .mobile-course-row { display:grid; grid-template-columns:58px minmax(0,1fr) 40px; align-items:center; gap:12px; padding:13px; border:1px solid #dbe4f2; border-radius:16px; color:#071936; background:#fff; box-shadow:0 5px 18px rgba(6,26,64,.045); text-decoration:none; }
+  .mobile-course-code { display:grid; width:56px; height:56px; place-items:center; border-radius:15px; color:#fff; background:linear-gradient(145deg,#061a40,#1548d8); font-size:18px; font-weight:900; }
+  .mobile-course-info { display:block; min-width:0; }
+  .mobile-course-info b,.mobile-course-info small,.mobile-course-info em { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .mobile-course-info b { font-size:14px; font-weight:900; }
+  .mobile-course-info small { margin-top:2px; color:#657695; font-size:10px; }
+  .mobile-course-info i { display:block; height:6px; overflow:hidden; margin:7px 0 3px; border-radius:999px; background:#dbe5f8; }
+  .mobile-course-info i span { display:block; height:100%; border-radius:inherit; background:#1548d8; }
+  .mobile-course-info em { color:#071936; font-size:10px; font-style:normal; font-weight:800; }
+  .mobile-course-arrow { display:grid; width:38px; height:38px; place-items:center; border-radius:50%; color:#ff168b; background:#ffe0f0; font-size:29px; font-weight:500; }
+  .mobile-find-courses { display:flex; align-items:center; justify-content:center; min-height:49px; margin-top:22px; border:1px solid #9db1d3; border-radius:14px; color:#071936; background:#fff; font-size:14px; font-weight:900; text-decoration:none; }
 
   .student-home-hero { position:relative; overflow:hidden; min-height:228px; margin-bottom:14px !important; padding:20px !important; border:0 !important; border-radius:20px !important; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8) !important; box-shadow:0 12px 28px rgba(6,26,64,.16) !important; }
   .student-home-hero::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 88% 12%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px); pointer-events:none; }
