@@ -184,6 +184,20 @@
   .mobile-journey-empty h2 { margin:0; color:#071936; font-size:18px; font-weight:900; }
   .mobile-journey-empty p { margin:7px 0 0; color:#657695; font-size:12px; line-height:1.6; }
 
+  .student-profile-shell { padding:2px 2px 34px; }
+  .student-profile-shell form { display:grid; gap:18px; }
+  .student-profile-shell form > section { padding:24px 21px !important; border:1px solid #dbe4f2 !important; border-radius:20px !important; background:#fff; box-shadow:0 5px 18px rgba(6,26,64,.045) !important; }
+  .student-profile-shell form > section h2 { margin:0 0 21px !important; color:#071936; font-size:18px !important; font-weight:900; letter-spacing:-.025em; }
+  .student-profile-shell form > section > div { display:grid !important; grid-template-columns:minmax(0,1fr) !important; gap:18px !important; }
+  .student-profile-shell label { display:block; color:#071936; font-size:13px !important; font-weight:800; }
+  .student-profile-shell input { width:100%; height:54px !important; padding:0 16px !important; border:1px solid #dbe4f2 !important; border-radius:999px !important; outline:0; background:#fff; color:#071936; font-size:14px; font-weight:700; box-shadow:none !important; transition:border-color .18s ease,box-shadow .18s ease; }
+  .student-profile-shell label input { margin-top:9px !important; }
+  .student-profile-shell input::placeholder { color:#9aa6b8; opacity:1; font-weight:600; }
+  .student-profile-shell input:disabled { background:#f7f9fc !important; color:#071936; opacity:1; -webkit-text-fill-color:#071936; }
+  .student-profile-shell input:focus { border-color:#ff70b2 !important; box-shadow:0 0 0 4px rgba(255,22,139,.09) !important; }
+  .student-profile-shell form > button { justify-self:start; min-height:54px !important; height:54px !important; margin:12px 0 0 !important; padding:0 25px !important; border:0; border-radius:999px !important; background:linear-gradient(135deg,#f54696,#ed2d82) !important; box-shadow:0 8px 18px rgba(231,45,130,.18); color:#fff; font-size:14px; font-weight:900; }
+  .student-profile-shell > .mb-4 { border-radius:15px !important; font-size:13px; }
+
   .student-home-hero { position:relative; overflow:hidden; min-height:228px; margin-bottom:14px !important; padding:20px !important; border:0 !important; border-radius:20px !important; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8) !important; box-shadow:0 12px 28px rgba(6,26,64,.16) !important; }
   .student-home-hero::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 88% 12%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px); pointer-events:none; }
   .student-home-hero > * { position:relative; z-index:1; }
