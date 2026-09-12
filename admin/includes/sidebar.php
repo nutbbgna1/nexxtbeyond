@@ -14,8 +14,7 @@ $adminMenu = [
   "ASSESSMENT" => [
     ["tests.php", "แบบทดสอบ"],
     ["question-bank.php", "Question Bank"],
-    ["ai-exam.php", "🤖 AI สร้างข้อสอบ"],
-    ["ai-exam-studio.php", "✨ AI Exam Studio"]
+    ["ai-exam.php", "🤖 AI สร้างข้อสอบ"]
   ],
   "OPERATIONS" => [
     ["students.php", "นักเรียน"],
