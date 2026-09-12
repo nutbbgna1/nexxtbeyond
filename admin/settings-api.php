@@ -41,10 +41,11 @@ $defaults = [
     'teacher_test_access' => '0',
     'guest_test_access' => '1',
     'email_notifications' => '1',
+    'calculator_enabled' => '1',
 ];
 $booleanKeys = [
     'registration_enabled', 'maintenance_mode', 'student_portal_enabled',
-    'teacher_course_access', 'teacher_test_access', 'guest_test_access', 'email_notifications',
+    'teacher_course_access', 'teacher_test_access', 'guest_test_access', 'email_notifications', 'calculator_enabled'
 ];
 
 foreach (teacherMenuSettings() as $key => $menu) {

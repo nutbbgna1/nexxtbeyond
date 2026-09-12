@@ -15,11 +15,18 @@ $studentMenu = [
     'แบบทดสอบ'  => [
         ['tests.php',        'ข้อสอบที่เปิดอยู่',  'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
         ['my-tests.php',     'ประวัติข้อสอบ',      'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+        ['score-calculator.php', 'คำนวณคะแนน TCAS', 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z'],
     ],
     'บัญชี'     => [
         ['profile.php',      'โปรไฟล์ของฉัน',     'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
     ],
 ];
+
+$stmtSidebarSettings = $pdo->query("SELECT setting_value FROM system_settings WHERE setting_key = 'calculator_enabled'");
+if ($stmtSidebarSettings->fetchColumn() === '0') {
+    array_pop($studentMenu['แบบทดสอบ']);
+}
+
 $currentPage = $currentPage ?? 'index.php';
 $u = $currentUser ?? [];
 $displayName = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?: 'นักเรียน';

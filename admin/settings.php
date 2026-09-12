@@ -33,6 +33,7 @@ $currentPage = 'settings.php';
           <button data-settings-tab="general" class="settings-tab pb-3 px-1 border-b-2 border-pink-500 text-[13px] font-bold whitespace-nowrap">ข้อมูลสถาบัน</button>
           <button data-settings-tab="payment" class="settings-tab pb-3 px-1 border-b-2 border-transparent text-[#94a3b8] text-[13px] font-bold whitespace-nowrap">การชำระเงิน</button>
           <button data-settings-tab="permissions" class="settings-tab pb-3 px-1 border-b-2 border-transparent text-[#94a3b8] text-[13px] font-bold whitespace-nowrap">บทบาทและสิทธิ์</button>
+          <button data-settings-tab="calculator" class="settings-tab pb-3 px-1 border-b-2 border-transparent text-[#94a3b8] text-[13px] font-bold whitespace-nowrap">คำนวณคะแนน</button>
           <button data-settings-tab="ai" class="settings-tab pb-3 px-1 border-b-2 border-transparent text-[#94a3b8] text-[13px] font-bold whitespace-nowrap">AI API Key</button>
         </nav>
 
@@ -96,6 +97,45 @@ $currentPage = 'settings.php';
           </form>
         </section>
 
+        <section data-settings-panel="calculator" class="hidden">
+          <form data-settings-form class="bg-white rounded-[20px] border border-[#e8ecf2] overflow-hidden mb-6">
+            <div class="px-7 py-5 border-b border-[#e8ecf2] flex items-center justify-between">
+              <div>
+                <h3 class="text-[17px] font-bold">ระบบคำนวณคะแนน TCAS</h3>
+                <p class="mt-1 text-[12px] text-[#65738a]">เปิด/ปิดเมนูคำนวณคะแนนสำหรับนักเรียน</p>
+              </div>
+              <label class="settings-toggle-row"><input data-setting="calculator_enabled" type="checkbox" class="settings-checkbox"></label>
+            </div>
+            <div class="settings-actions"><button type="button" data-settings-reset class="settings-cancel">ยกเลิก</button><button class="settings-save">บันทึกสิทธิ์</button></div>
+          </form>
+
+          <div class="bg-white rounded-[20px] border border-[#e8ecf2] overflow-hidden">
+            <div class="px-7 py-5 border-b border-[#e8ecf2] flex items-center justify-between">
+              <div>
+                <h3 class="text-[17px] font-bold">กลุ่มคณะเป้าหมายและสูตรคำนวณ</h3>
+                <p class="mt-1 text-[12px] text-[#65738a]">จัดการรายชื่อกลุ่มคณะและค่าน้ำหนักที่ใช้คำนวณ</p>
+              </div>
+              <button type="button" id="btn-add-track" class="h-9 px-4 rounded-lg bg-[#f8fafc] border border-[#dce4ef] text-[12px] font-bold hover:bg-[#f1f5f9]">เพิ่มกลุ่มคณะ</button>
+            </div>
+            <div class="p-0">
+              <table class="w-full text-left text-[13px]">
+                <thead class="bg-[#f8fafc] text-[#65738a] border-b border-[#e8ecf2]">
+                  <tr>
+                    <th class="py-3 px-5 font-bold">ชื่อกลุ่มคณะ</th>
+                    <th class="py-3 px-5 font-bold">รายละเอียดสูตร</th>
+                    <th class="py-3 px-5 font-bold">เกณฑ์ขั้นต่ำ</th>
+                    <th class="py-3 px-5 font-bold w-24">สถานะ</th>
+                    <th class="py-3 px-5 font-bold w-20">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="calculator-tracks-tbody">
+                  <tr><td colspan="5" class="py-10 text-center text-[#65738a]">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <section data-settings-panel="ai" class="hidden">
           <form id="ai-settings-form" class="bg-white rounded-[20px] border border-[#e8ecf2] overflow-hidden">
             <div class="px-7 py-5 border-b border-[#e8ecf2] flex items-center justify-between gap-4"><div><h3 class="text-[17px] font-bold">Gemini API Key</h3><p class="mt-1 text-[12px] text-[#65738a]">ใช้สำหรับ AI Exam Generator และจัดเก็บแบบเข้ารหัส</p></div><span id="ai-key-status" class="px-3 py-1 rounded-full bg-[#f1f5f9] text-[#65738a] text-[11px] font-bold">กำลังตรวจสอบ</span></div>
@@ -120,5 +160,55 @@ $currentPage = 'settings.php';
 .settings-cancel,.settings-save{height:42px;padding:0 20px;border-radius:10px;font-size:13px;font-weight:700}
 .settings-cancel{border:1px solid #dce4ef;background:#fff}.settings-save{background:#f54696;color:#fff}.settings-save:disabled{opacity:.55}
 </style>
+<!-- Calculator Track Modal -->
+<div id="calculator-track-modal" class="fixed inset-0 bg-navy-950/40 z-[100] hidden items-center justify-center p-4">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="px-6 py-4 border-b border-[#e8ecf2] flex items-center justify-between shrink-0">
+      <h3 class="text-[17px] font-bold" id="track-modal-title">เพิ่มกลุ่มคณะ</h3>
+      <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#65738a] hover:bg-[#f4f7fb]" onclick="closeTrackModal()">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <form id="track-form" class="space-y-5">
+        <input type="hidden" id="track-id">
+        <div class="grid grid-cols-4 gap-4">
+          <label class="col-span-1 text-[13px] font-bold">ไอคอน (Emoji)<input id="track-icon" required class="settings-field mt-2 text-center text-xl" placeholder="🩺" maxlength="10"></label>
+          <label class="col-span-3 text-[13px] font-bold">ชื่อกลุ่มคณะ<input id="track-name" required class="settings-field mt-2" placeholder="เช่น แพทยศาสตร์"></label>
+        </div>
+        <label class="block text-[13px] font-bold">คำอธิบายสูตรแบบย่อ<input id="track-desc" required class="settings-field mt-2" placeholder="เช่น TPAT1 30% + A-Level 70%"></label>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="block text-[13px] font-bold">เกณฑ์ขั้นต่ำ (%)<input id="track-min" type="number" step="0.01" min="0" max="100" required class="settings-field mt-2" placeholder="58.00"></label>
+          <label class="block text-[13px] font-bold">ลำดับแสดงผล<input id="track-sort" type="number" required class="settings-field mt-2" value="0"></label>
+        </div>
+        
+        <div class="pt-5 border-t border-[#e8ecf2]">
+          <h4 class="font-bold text-[14px] mb-4">ค่าน้ำหนักที่ใช้คำนวณ (รวมต้องได้ 1.0)</h4>
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <label class="block text-[12px] font-bold">TGAT<input type="number" step="0.01" min="0" max="1" data-subject="tgat" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">TPAT<input type="number" step="0.01" min="0" max="1" data-subject="tpat" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level คณิต 1<input type="number" step="0.01" min="0" max="1" data-subject="math1" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level ฟิสิกส์<input type="number" step="0.01" min="0" max="1" data-subject="physics" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level อังกฤษ<input type="number" step="0.01" min="0" max="1" data-subject="english" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level สังคม<input type="number" step="0.01" min="0" max="1" data-subject="social" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level ไทย<input type="number" step="0.01" min="0" max="1" data-subject="thai" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level ชีวะ<input type="number" step="0.01" min="0" max="1" data-subject="bio" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+            <label class="block text-[12px] font-bold">A-Level เคมี<input type="number" step="0.01" min="0" max="1" data-subject="chem" class="track-weight-input settings-field mt-1 px-3 h-10" placeholder="0.00"></label>
+          </div>
+          <div id="weight-total-warning" class="mt-3 text-red-500 text-[12px] font-bold hidden">ผลรวมน้ำหนักต้องเท่ากับ 1.0 (ปัจจุบัน: <span id="weight-total-val">0.00</span>)</div>
+        </div>
+
+        <label class="settings-toggle-row mt-5 pt-5 border-t border-[#e8ecf2]">
+          <span><b>เปิดใช้งาน</b><small>ให้นักเรียนมองเห็นกลุ่มคณะนี้</small></span>
+          <input id="track-active" type="checkbox" class="settings-checkbox" checked>
+        </label>
+      </form>
+    </div>
+    <div class="px-6 py-4 bg-[#f8fafc] border-t border-[#e8ecf2] flex items-center justify-end gap-3 shrink-0">
+      <button type="button" class="settings-cancel" onclick="closeTrackModal()">ยกเลิก</button>
+      <button type="button" class="settings-save" onclick="saveTrack()">บันทึกกลุ่มคณะ</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
