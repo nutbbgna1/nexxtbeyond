@@ -71,7 +71,7 @@ function testScoreMeta(float $score): array
   <?php include 'includes/sidebar.php'; ?>
   <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
-    <main class="flex-1 p-8 max-[640px]:p-4">
+    <main class="flex-1 p-8 max-[640px]:p-4 max-[768px]:pb-24">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">
         <p class="student-kicker mb-2">Test performance</p>
         <div class="flex items-end justify-between gap-5 flex-wrap">
@@ -197,6 +197,7 @@ function testScoreMeta(float $score): array
         </section>
       <?php endif; ?>
     </main>
+    <?php include 'includes/bottom-nav.php'; ?>
   </div>
 </div>
 </body>

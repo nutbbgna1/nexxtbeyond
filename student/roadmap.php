@@ -70,7 +70,7 @@ $labels = roadmapStageLabels();
   <?php include 'includes/sidebar.php'; ?>
   <div class="flex-1 ml-[240px] max-[960px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
-    <main class="p-8 max-[640px]:p-4">
+    <main class="p-8 max-[640px]:p-4 max-[768px]:pb-24">
       <?php if (!$currentRoadmap): ?>
         <section class="choice-banner">
           <p class="student-kicker text-[#b9c5d7] mb-2">Choose your learning path</p>
@@ -182,6 +182,7 @@ $labels = roadmapStageLabels();
         </section>
       <?php endif; ?>
     </main>
+    <?php include 'includes/bottom-nav.php'; ?>
   </div>
 </div>
 <script>

@@ -7,7 +7,7 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
 <header class="student-topbar sticky top-0 z-30 bg-white border-b border-[#e8ecf2]">
   <div class="flex items-center h-[60px] px-6 gap-4">
     <!-- Mobile hamburger -->
-    <button id="sidebarToggle" class="hidden max-[960px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" aria-label="เปิดเมนู">
+    <button id="sidebarToggle" class="hidden max-[960px]:flex max-[768px]:!hidden items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" aria-label="เปิดเมนู">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>

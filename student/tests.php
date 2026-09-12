@@ -46,7 +46,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
   <?php include 'includes/sidebar.php'; ?>
   <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
-<main class="exam-page">
+<main class="exam-page max-[768px]:pb-24">
   <section class="exam-banner">
     <div>
       <span class="exam-kicker">✦ คลังข้อสอบมาตรฐาน &amp; ข้อสอบจากผู้สอน</span>
@@ -96,6 +96,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
   </section>
   <div id="no-results" class="exam-empty" hidden>ไม่พบข้อสอบที่ตรงกับการค้นหา</div>
 </main>
+<?php include 'includes/bottom-nav.php'; ?>
 </div>
 </div>
 <script>
