@@ -6,6 +6,15 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
 ?>
 <header class="student-topbar sticky top-0 z-30 bg-white border-b border-[#e8ecf2]">
   <div class="flex items-center h-[60px] px-6 gap-4">
+    <a href="index.php" class="student-mobile-brand" aria-label="Next Beyond Student">
+      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <line x1="25" y1="32" x2="31" y2="8" stroke="#ff168b" stroke-width="8" stroke-linecap="round"/>
+        <clipPath id="logo-clip-topbar"><rect x="0" y="9" width="40" height="22"/></clipPath>
+        <g clip-path="url(#logo-clip-topbar)"><path d="M 8 36 L 15 4 L 27 36" fill="none" stroke="#061a40" stroke-width="8.5" stroke-linejoin="miter" stroke-miterlimit="8"/></g>
+      </svg>
+      <span><strong>NEXT BEYOND</strong><small>STUDENT</small></span>
+    </a>
+
     <!-- Mobile hamburger -->
     <button id="sidebarToggle" class="hidden max-[960px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" aria-label="เปิดเมนู">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -17,7 +26,7 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
 
     <div class="ml-auto flex items-center gap-3">
       <!-- Notification Bell (future) -->
-      <button class="w-9 h-9 rounded-lg flex items-center justify-center text-[#65738a] hover:bg-[#f4f7fb] transition-colors relative" aria-label="การแจ้งเตือน">
+      <button class="student-notification w-9 h-9 rounded-lg flex items-center justify-center text-[#65738a] hover:bg-[#f4f7fb] transition-colors relative" aria-label="การแจ้งเตือน">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
         </svg>

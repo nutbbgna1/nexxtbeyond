@@ -116,3 +116,29 @@
   .result-actions { flex-direction: column; }
 }
 @media (max-width: 520px) { .student-exam-grid { grid-template-columns: 1fr; } .exam-count { width: 100%; margin-left: 0; } }
+
+@media (max-width: 768px) {
+  .exam-page,.test-shell,.result-wrap { padding:14px 14px 24px; }
+  .exam-banner { position:relative; overflow:hidden; min-height:218px; padding:19px; border:0; border-radius:20px; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.16); }
+  .exam-banner::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 88% 10%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px); pointer-events:none; }
+  .exam-banner > * { position:relative; z-index:1; }
+  .exam-banner h1 { margin-top:13px; font-size:24px; line-height:1.22; letter-spacing:-.04em; }
+  .exam-banner p { max-width:300px; font-size:12px; }
+  .exam-banner .exam-action { width:100%; margin-top:auto; min-height:46px; border-radius:14px; }
+  .exam-filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .exam-search { grid-column:1/-1; min-width:0; }
+  .exam-filter { width:100%; height:46px; border-radius:14px; }
+  .exam-count { grid-column:1/-1; width:auto; padding-left:2px; }
+  .student-exam-grid { gap:10px; }
+  .student-exam-card { min-height:238px; padding:16px; border-radius:16px; box-shadow:0 5px 18px rgba(6,26,64,.045); }
+  .student-exam-card h3 { margin-top:14px; font-size:16px; }
+  .student-exam-card .exam-action { min-height:45px; border-radius:14px; }
+  .test-head,.test-palette,.question-panel,.skill-card,.review-card { border-radius:16px; }
+  .test-head { padding:17px; }
+  .test-head h1 { font-size:17px; }
+  .test-clock { font-size:19px; }
+  .question-panel { padding:17px; }
+  .question-text { margin:20px 0; font-size:16px; }
+  .option { padding:14px; border-radius:13px; }
+  .result-hero { border:0; border-radius:20px; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.16); }
+}

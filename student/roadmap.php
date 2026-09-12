@@ -62,7 +62,15 @@ $labels = roadmapStageLabels();
     .task-action-btn:hover{background:#1a52b3}
     .task-locked{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#718096;background:#f1f5f9;padding:6px 10px;border-radius:6px}
     @media(max-width:900px){.roadmap-choice-grid{grid-template-columns:1fr}}
-    @media(max-width:640px){.roadmap-task{align-items:flex-start}.roadmap-points{margin-left:0}.roadmap-tabs{display:grid!important;grid-template-columns:1fr}.roadmap-tab{justify-content:center}.choice-banner{padding:24px}.choice-banner h2{font-size:22px}}
+    @media(max-width:640px){
+      .roadmap-task{position:relative;align-items:flex-start;padding:14px;border-radius:15px;box-shadow:0 5px 18px rgba(6,26,64,.045)}
+      .roadmap-points{position:absolute;right:12px;bottom:10px;margin-left:0}.roadmap-tabs{display:grid!important;grid-template-columns:1fr}.roadmap-tab{justify-content:center}
+      .choice-banner{position:relative;overflow:hidden;min-height:205px;padding:20px;border:0;border-radius:20px;background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8);box-shadow:0 12px 28px rgba(6,26,64,.16)}
+      .choice-banner:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 88% 10%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px);pointer-events:none}.choice-banner>*{position:relative;z-index:1}
+      .choice-banner h2{font-size:24px;line-height:1.2;letter-spacing:-.04em}.choice-banner p{font-size:12px}
+      .roadmap-choice-grid{gap:10px;margin-top:14px}.roadmap-choice{min-height:225px;padding:17px;border-radius:16px;box-shadow:0 5px 18px rgba(6,26,64,.045)}
+      .roadmap-choice h3{margin-top:14px;font-size:17px}.choice-footer{padding-top:15px}.task-action-btn{flex:none}
+    }
   </style>
 </head>
 <body class="student-portal bg-[#f4f7fb] text-navy-950">

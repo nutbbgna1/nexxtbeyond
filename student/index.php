@@ -81,7 +81,7 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
     <main class="flex-1 p-8 max-[640px]:p-4">
 
       <!-- Welcome Banner -->
-      <div class="mb-8 rounded-xl bg-navy-950 p-7 text-white border border-[#17304f]">
+      <div class="student-home-hero mb-8 rounded-xl bg-navy-950 p-7 text-white border border-[#17304f]">
         <div class="flex items-end justify-between gap-6 flex-wrap">
           <div>
           <p class="student-kicker text-[#b9c5d7] mb-2">Student overview</p>
@@ -102,7 +102,7 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-3 gap-4 mb-8 max-[700px]:grid-cols-1">
+      <div class="student-home-stats grid grid-cols-3 gap-4 mb-8 max-[700px]:grid-cols-1">
         <div class="bg-white rounded-[18px] border border-[#e8ecf2] p-5 shadow-[0_2px_12px_rgba(15,42,83,0.04)]">
           <div class="flex items-center justify-between mb-3">
             <span class="text-[12px] font-bold text-[#65738a] uppercase tracking-wide">คะแนนเฉลี่ย</span>
