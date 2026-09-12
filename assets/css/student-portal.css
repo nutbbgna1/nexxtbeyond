@@ -24,7 +24,7 @@
 #studentSidebar > div:last-child a:last-child { color:#ef4444 !important; }
 #studentSidebar > div:last-child a:last-child:hover { color:#ef4444 !important; background:#fef2f2 !important; }
 .student-topbar { min-height:64px; box-shadow:none !important; }
-.student-mobile-brand,.student-bottom-nav,.student-mobile-home,.student-mobile-courses { display:none; }
+.student-mobile-brand,.student-bottom-nav,.student-mobile-home,.student-mobile-courses,.student-mobile-journey { display:none; }
 .student-kicker { color:#8190a5; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
 .student-section-title { display:flex; align-items:center; gap:10px; }
 .student-section-title::before { content:""; width:3px; height:18px; background:var(--student-pink); border-radius:2px; }
@@ -142,6 +142,47 @@
   .mobile-course-info em { color:#071936; font-size:10px; font-style:normal; font-weight:800; }
   .mobile-course-arrow { display:grid; width:38px; height:38px; place-items:center; border-radius:50%; color:#ff168b; background:#ffe0f0; font-size:29px; font-weight:500; }
   .mobile-find-courses { display:flex; align-items:center; justify-content:center; min-height:49px; margin-top:22px; border:1px solid #9db1d3; border-radius:14px; color:#071936; background:#fff; font-size:14px; font-weight:900; text-decoration:none; }
+
+  .student-learning-desktop { display:none !important; }
+  .student-mobile-journey { display:block; }
+  .mobile-journey-intro { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:2px 6px 18px; }
+  .mobile-journey-intro p { margin:0 0 3px; color:#1548d8; font-size:13px; font-weight:900; letter-spacing:.08em; }
+  .mobile-journey-intro h1 { margin:0; color:#071936; font-size:30px; font-weight:900; line-height:1.12; letter-spacing:-.045em; }
+  .mobile-journey-intro select,.mobile-journey-stage { display:grid; min-width:69px; height:62px; padding:0 12px; place-items:center; border:0; border-radius:19px; color:#071936; background:#e8eeff; font-size:17px; font-weight:900; text-align:center; }
+  .mobile-journey-intro select { appearance:auto; outline:none; }
+  .mobile-journey-tabs { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:14px; padding:4px; border-radius:15px; background:#e8eeff; }
+  .mobile-journey-tabs a { display:flex; min-height:50px; align-items:center; justify-content:center; border-radius:13px; color:#071936; font-size:13px; font-weight:900; text-decoration:none; }
+  .mobile-journey-tabs a.active { color:#fff; background:#ff168b; }
+  .mobile-goal-card { display:grid; grid-template-columns:minmax(0,1fr) 90px; align-items:center; gap:13px; min-height:162px; padding:19px; border-radius:20px; color:#fff; background:linear-gradient(135deg,#061a40,#0b2d68 58%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.13); }
+  .mobile-goal-card small { display:block; color:#fff; font-size:12px; font-weight:800; }
+  .mobile-goal-card h2 { display:-webkit-box; overflow:hidden; margin:7px 0 5px; color:#fff; font-size:21px; font-weight:900; line-height:1.25; letter-spacing:-.035em; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+  .mobile-goal-card p { display:-webkit-box; overflow:hidden; margin:0; color:#d5e2f8; font-size:11px; line-height:1.5; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+  .mobile-progress-ring { position:relative; display:grid; width:82px; height:82px; place-items:center; border-radius:50%; background:conic-gradient(#ff168b var(--journey-progress),#3c65ae 0); }
+  .mobile-progress-ring::after { content:""; position:absolute; inset:9px; border-radius:50%; background:#0a2a62; }
+  .mobile-progress-ring strong { position:relative; z-index:1; color:#fff; font-size:20px; font-weight:900; }
+  .mobile-journey-timeline { position:relative; margin:26px 0 12px; }
+  .mobile-route-line { position:absolute; left:31px; top:30px; bottom:34px; width:4px; border-radius:9px; background:#c8d7ea; }
+  .mobile-milestone { position:relative; display:grid; grid-template-columns:62px minmax(0,1fr) 25px; align-items:center; gap:10px; min-height:104px; padding:11px 8px 11px 0; color:#071936; text-decoration:none; }
+  .mobile-milestone-number { position:relative; z-index:2; display:grid; width:54px; height:54px; place-items:center; border:6px solid #c8d7ea; border-radius:50%; color:#071936; background:#fff; font-size:18px; font-weight:900; }
+  .mobile-milestone.done .mobile-milestone-number { border-color:#ffd3e8; color:#fff; background:#ff168b; }
+  .mobile-milestone.done::after { content:""; position:absolute; left:29px; top:60px; width:6px; height:52px; background:#ff168b; }
+  .mobile-milestone-copy { display:block; min-width:0; }
+  .mobile-milestone-copy small,.mobile-milestone-copy b,.mobile-milestone-copy em { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .mobile-milestone-copy small { color:#657695; font-size:11px; font-weight:800; }
+  .mobile-milestone-copy b { margin-top:4px; color:#071936; font-size:19px; font-weight:900; line-height:1.2; }
+  .mobile-milestone-copy em { margin-top:4px; color:#657695; font-size:11px; font-style:normal; font-weight:700; }
+  .mobile-milestone.current { min-height:112px; margin:0; padding:13px 10px 13px 14px; border-left:5px solid #ff168b; border-radius:18px; background:#fff; box-shadow:0 12px 30px rgba(6,26,64,.09); }
+  .mobile-milestone.current .mobile-milestone-number { width:54px; height:54px; border-color:#ffd3e8; color:#fff; background:#ff168b; }
+  .mobile-milestone.current .mobile-milestone-copy b { font-size:20px; }
+  .mobile-milestone.current .mobile-milestone-copy em { color:#526d98; }
+  .mobile-milestone-arrow { color:#071936; font-size:34px; font-weight:500; }
+  .mobile-next-lesson { display:flex; min-height:64px; margin-top:12px; padding:0 17px 0 23px; align-items:center; justify-content:space-between; border-radius:17px; color:#fff; background:#061a40; box-shadow:0 12px 28px rgba(6,26,64,.14); text-decoration:none; }
+  .mobile-next-lesson span { font-size:17px; font-weight:900; }
+  .mobile-next-lesson b { display:grid; width:31px; height:31px; place-items:center; border-radius:50%; background:#ff168b; font-size:24px; line-height:1; }
+  .mobile-journey-empty { margin:22px 0; padding:30px 20px; border:1px solid #dbe4f2; border-radius:18px; background:#fff; text-align:center; }
+  .mobile-journey-empty > span { display:grid; width:52px; height:52px; margin:0 auto 13px; place-items:center; border-radius:16px; color:#ff168b; background:#ffe0f0; font-size:25px; }
+  .mobile-journey-empty h2 { margin:0; color:#071936; font-size:18px; font-weight:900; }
+  .mobile-journey-empty p { margin:7px 0 0; color:#657695; font-size:12px; line-height:1.6; }
 
   .student-home-hero { position:relative; overflow:hidden; min-height:228px; margin-bottom:14px !important; padding:20px !important; border:0 !important; border-radius:20px !important; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8) !important; box-shadow:0 12px 28px rgba(6,26,64,.16) !important; }
   .student-home-hero::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 88% 12%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px); pointer-events:none; }

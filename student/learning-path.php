@@ -2,6 +2,7 @@
 $pageTitle = 'เส้นทางการเรียน';
 $currentPage = 'learning-path.php';
 require_once __DIR__ . '/includes/guard.php';
+require_once __DIR__ . '/../includes/roadmap-service.php';
 
 $stmt = $pdo->prepare('SELECT * FROM learning_paths WHERE user_id = :user_id ORDER BY updated_at DESC, id DESC');
 $stmt->execute([':user_id' => $currentUser['id']]);
@@ -29,6 +30,50 @@ function learningStepTitle($step): string
     if (!is_array($step)) return trim((string) $step);
     return trim((string) ($step['title'] ?? $step['name'] ?? $step['topic'] ?? 'ขั้นตอนการเรียน'));
 }
+
+// Mobile Learning Journey ใช้ Roadmap ที่นักเรียนเลือกและข้อมูลภารกิจจริง
+$studentRoadmaps = getStudentRoadmaps($pdo, (int)$currentUser['id']);
+$enrolledRoadmaps = array_values(array_filter(
+    $studentRoadmaps,
+    static fn(array $roadmap): bool => $roadmap['enroll_status'] !== 'not_enrolled'
+));
+$requestedRoadmapId = (int)($_GET['roadmap_id'] ?? 0);
+$mobileRoadmap = null;
+foreach ($enrolledRoadmaps as $roadmap) {
+    if (($requestedRoadmapId > 0 && (int)$roadmap['id'] === $requestedRoadmapId)
+        || ($requestedRoadmapId === 0 && $roadmap['enroll_status'] === 'active')) {
+        $mobileRoadmap = $roadmap;
+        break;
+    }
+}
+$mobileRoadmap ??= $enrolledRoadmaps[0] ?? null;
+$mobileTasks = $mobileRoadmap ? getRoadmapTasks($pdo, (int)$mobileRoadmap['id'], (int)$currentUser['id']) : [];
+$mobileProgress = roadmapProgress($mobileTasks);
+$roadmapStageNames = ['m1' => 'ม.1', 'm4' => 'ม.4', 'tcas' => 'TCAS'];
+$nextMobileTask = null;
+foreach ($mobileTasks as $task) {
+    if (!in_array($task['progress_status'], ['completed', 'exempted', 'locked'], true)) {
+        $nextMobileTask = $task;
+        break;
+    }
+}
+
+function mobileRoadmapTaskUrl(array $task): string
+{
+    if (!empty($task['ref_lesson_id'])) return '../lesson.php?id=' . (int)$task['ref_lesson_id'];
+    if (!empty($task['ref_exam_id'])) return 'take-test.php?id=' . (int)$task['ref_exam_id'];
+    return 'roadmap.php?id=' . (int)$task['roadmap_id'];
+}
+
+function mobileRoadmapTaskType(array $task): string
+{
+    return match ($task['completion_type']) {
+        'complete_lesson', 'complete_course' => '▤ บทเรียน  ▷ วิดีโอ',
+        'submit_test', 'pass_test' => '▣ แบบทดสอบ',
+        'attend_schedule' => '◷ ตารางเรียน',
+        default => $task['subject'] ?: 'ภารกิจใน Roadmap',
+    };
+}
 ?>
 <!doctype html>
 <html lang="th">
@@ -45,6 +90,60 @@ function learningStepTitle($step): string
   <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="p-8 max-[640px]:p-4">
+      <section class="student-mobile-journey" aria-label="เส้นทางการเรียนบนมือถือ">
+        <header class="mobile-journey-intro">
+          <div><p>LEARNING JOURNEY</p><h1>เส้นทางของฉัน</h1></div>
+          <?php if (count($enrolledRoadmaps) > 1): ?>
+            <select aria-label="เลือก Roadmap" onchange="location.href='learning-path.php?roadmap_id='+this.value">
+              <?php foreach ($enrolledRoadmaps as $roadmap): ?><option value="<?= (int)$roadmap['id'] ?>" <?= (int)$roadmap['id'] === (int)$mobileRoadmap['id'] ? 'selected' : '' ?>><?= htmlspecialchars($roadmapStageNames[$roadmap['stage']] ?? strtoupper($roadmap['stage'])) ?></option><?php endforeach; ?>
+            </select>
+          <?php else: ?>
+            <span class="mobile-journey-stage"><?= htmlspecialchars($roadmapStageNames[$mobileRoadmap['stage'] ?? 'm4'] ?? 'ม.4') ?></span>
+          <?php endif; ?>
+        </header>
+
+        <nav class="mobile-journey-tabs" aria-label="เมนูเส้นทางการเรียน">
+          <a class="active" href="learning-path.php">แผนของฉัน</a>
+          <a href="roadmap.php">เลือก Roadmap</a>
+        </nav>
+
+        <?php if ($mobileRoadmap): ?>
+          <article class="mobile-goal-card">
+            <div><small>เป้าหมายของฉัน</small><h2><?= htmlspecialchars($mobileRoadmap['title']) ?></h2><p><?= htmlspecialchars($mobileRoadmap['description'] ?: 'ทุกบทเรียน พาคุณไปไกลกว่าเดิม') ?></p></div>
+            <div class="mobile-progress-ring" style="--journey-progress:<?= (int)$mobileProgress['percent'] ?>%"><strong><?= (int)$mobileProgress['percent'] ?>%</strong></div>
+          </article>
+
+          <div class="mobile-journey-timeline">
+            <div class="mobile-route-line" aria-hidden="true"></div>
+            <?php foreach (array_slice($mobileTasks, 0, 6) as $index => $task):
+              $isDone = in_array($task['progress_status'], ['completed', 'exempted'], true);
+              $isCurrent = $nextMobileTask && (int)$task['id'] === (int)$nextMobileTask['id'];
+              $taskClass = $isDone ? 'done' : ($isCurrent ? 'current' : 'pending');
+            ?>
+              <a class="mobile-milestone <?= $taskClass ?>" href="<?= htmlspecialchars(mobileRoadmapTaskUrl($task)) ?>">
+                <span class="mobile-milestone-number"><?= $isDone ? '✓' : $index + 1 ?></span>
+                <span class="mobile-milestone-copy">
+                  <small><?= $isCurrent ? 'บทเรียนถัดไป' : 'บทที่ ' . ($index + 1) ?><?= $isCurrent && $task['subject'] ? ' • ' . htmlspecialchars($task['subject']) : '' ?></small>
+                  <b><?= htmlspecialchars($task['title']) ?></b>
+                  <em><?= $isDone ? 'เรียนจบแล้ว' : ($isCurrent ? htmlspecialchars(mobileRoadmapTaskType($task)) : 'ยังไม่ได้เรียน') ?></em>
+                </span>
+                <?php if ($isCurrent): ?><strong class="mobile-milestone-arrow">›</strong><?php endif; ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+
+          <?php if ($nextMobileTask): ?><a class="mobile-next-lesson" href="<?= htmlspecialchars(mobileRoadmapTaskUrl($nextMobileTask)) ?>"><span>เริ่มบทเรียนถัดไป</span><b>›</b></a><?php endif; ?>
+        <?php else: ?>
+          <article class="mobile-goal-card empty">
+            <div><small>เป้าหมายของฉัน</small><h2>เลือก Roadmap ก่อนเริ่มเรียน</h2><p>เลือกแผนที่ตรงกับระดับและเป้าหมายของคุณ</p></div>
+            <div class="mobile-progress-ring" style="--journey-progress:0%"><strong>0%</strong></div>
+          </article>
+          <div class="mobile-journey-empty"><span>✦</span><h2>ยังไม่มีแผนของฉัน</h2><p>เมื่อเลือก Roadmap แล้ว ภารกิจทั้งหมดจะแสดงเป็นเส้นทางในหน้านี้</p></div>
+          <a class="mobile-next-lesson" href="roadmap.php"><span>เลือก Roadmap</span><b>›</b></a>
+        <?php endif; ?>
+      </section>
+
+      <div class="student-learning-desktop">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">
         <p class="student-kicker mb-2">Learning roadmap</p>
         <div class="flex items-end justify-between gap-5 flex-wrap">
@@ -125,6 +224,7 @@ function learningStepTitle($step): string
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
+      </div>
     </main>
     <?php include 'includes/bottom-nav.php'; ?>
   </div>
