@@ -22,12 +22,41 @@ $stmtDone->execute([':uid' => $currentUser['id']]);
 $doneMap = [];
 foreach ($stmtDone->fetchAll() as $row) $doneMap[(int)$row['exam_id']] = $row;
 
+$recentStmt = $pdo->prepare(
+    'SELECT a.id, a.score, a.correct_count, a.total_questions, e.title, e.subject
+     FROM test_attempts a INNER JOIN exams e ON e.id = a.exam_id
+     WHERE a.user_id = :uid AND a.completed_at IS NOT NULL
+     ORDER BY a.completed_at DESC, a.id DESC LIMIT 1'
+);
+$recentStmt->execute([':uid' => $currentUser['id']]);
+$recentAttempt = $recentStmt->fetch() ?: null;
+
 $subjects = [];
 foreach ($exams as $exam) {
     $subject = trim((string)($exam['subject'] ?? '')) ?: 'ทั่วไป';
     $subjects[$subject] = true;
 }
 ksort($subjects, SORT_NATURAL);
+
+function studentExamCode(string $subject, string $title): string
+{
+    $source = mb_strtolower($subject . ' ' . $title);
+    foreach ([
+        'คณิต' => 'MA', 'math' => 'MA', 'อังกฤษ' => 'EN', 'english' => 'EN',
+        'เคมี' => 'CH', 'chem' => 'CH', 'ฟิสิกส์' => 'PH', 'physics' => 'PH',
+        'ชีว' => 'BI', 'biology' => 'BI', 'วิทย' => 'SC', 'science' => 'SC',
+    ] as $word => $code) if (str_contains($source, $word)) return $code;
+    return mb_strtoupper(mb_substr(trim($subject ?: $title ?: 'EX'), 0, 2));
+}
+
+function studentExamMobileGroup(string $type): string
+{
+    return match ($type) {
+        'pretest' => 'pre', 'posttest' => 'post', default => 'mock',
+    };
+}
+
+$featuredExam = $exams[0] ?? null;
 $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
 ?>
 <!DOCTYPE html>
@@ -47,6 +76,55 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
   <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
 <main class="exam-page">
+  <section class="student-mobile-exams" aria-label="คลังข้อสอบบนมือถือ">
+    <header class="mobile-exams-intro"><p>PRACTICE HUB</p><h1>พร้อมท้าทายตัวเอง?</h1><span>ฝึกทีละนิด เข้าใกล้เป้าหมาย</span></header>
+
+    <article class="mobile-exam-hero">
+      <div class="mobile-exam-hero-copy">
+        <?php if ($featuredExam): ?>
+          <small>ฝึกวันนี้</small>
+          <h2><?= htmlspecialchars($featuredExam['subject'] ?: 'แบบทดสอบแนะนำ') ?></h2>
+          <p><?= (int)$featuredExam['question_count'] ?> ข้อ<?= $featuredExam['time_limit_minutes'] ? ' • ' . (int)$featuredExam['time_limit_minutes'] . ' นาที' : '' ?></p>
+          <a href="take-test.php?id=<?= (int)$featuredExam['id'] ?>">เริ่มทำข้อสอบ ›</a>
+        <?php else: ?>
+          <small>Practice Hub</small><h2>ข้อสอบกำลังจัดเตรียม</h2><p>กลับมาตรวจสอบอีกครั้งเร็วๆ นี้</p><a href="my-tests.php">ดูผลการเรียน ›</a>
+        <?php endif; ?>
+      </div>
+      <img src="../assets/images/next-compass.png" alt="เข็มทิศ Next Beyond">
+    </article>
+
+    <div class="mobile-exam-search"><label><span>⌕</span><input id="mobile-exam-search" type="search" placeholder="ค้นหาข้อสอบ เช่น ภาษาอังกฤษ"></label><button type="button" aria-label="แสดงตัวกรอง" onclick="document.querySelector('.mobile-exam-chips')?.scrollIntoView({behavior:'smooth',block:'nearest'})">☷</button></div>
+    <nav class="mobile-exam-chips" aria-label="ประเภทข้อสอบ">
+      <button class="active" type="button" data-mobile-exam-filter="all">ทั้งหมด</button>
+      <button type="button" data-mobile-exam-filter="pre">Pre-test</button>
+      <button type="button" data-mobile-exam-filter="post">Post-test</button>
+      <button type="button" data-mobile-exam-filter="mock">Mock</button>
+    </nav>
+
+    <div class="mobile-exam-list" id="mobile-exam-list">
+      <?php foreach ($exams as $exam):
+        $subject = trim((string)($exam['subject'] ?? '')) ?: 'ทั่วไป';
+        $typeLabel = ['quiz'=>'Quiz','placement'=>'Mock','pretest'=>'Pre-test','posttest'=>'Post-test'][$exam['type']] ?? ucfirst((string)$exam['type']);
+      ?>
+        <a class="mobile-exam-row" href="take-test.php?id=<?= (int)$exam['id'] ?>" data-mobile-search="<?= htmlspecialchars(mb_strtolower($exam['title'].' '.$subject)) ?>" data-mobile-type="<?= studentExamMobileGroup((string)$exam['type']) ?>">
+          <span class="mobile-exam-code"><?= htmlspecialchars(studentExamCode($subject, (string)$exam['title'])) ?></span>
+          <span><b><?= htmlspecialchars($exam['title']) ?></b><small><?= htmlspecialchars($typeLabel) ?> • <?= (int)$exam['question_count'] ?> ข้อ<?= $exam['time_limit_minutes'] ? ' • ' . (int)$exam['time_limit_minutes'] . ' นาที' : '' ?></small></span>
+          <strong>›</strong>
+        </a>
+      <?php endforeach; ?>
+      <div class="mobile-exam-empty" <?= $exams ? 'hidden' : '' ?>>ยังไม่มีข้อสอบที่เปิดให้นักเรียนทำ</div>
+    </div>
+
+    <?php if ($recentAttempt):
+      $recentPercent = (int)$recentAttempt['total_questions'] > 0 ? (int)round((int)$recentAttempt['correct_count'] * 100 / (int)$recentAttempt['total_questions']) : (int)round((float)$recentAttempt['score']);
+    ?>
+      <a class="mobile-latest-result" href="test-result.php?id=<?= (int)$recentAttempt['id'] ?>"><span>▥</span><span><small>ผลครั้งล่าสุด</small><b><?= htmlspecialchars($recentAttempt['subject'] ?: $recentAttempt['title']) ?> • <?= $recentPercent ?>%</b></span><strong>ดูเลย ›</strong></a>
+    <?php else: ?>
+      <a class="mobile-latest-result" href="my-tests.php"><span>▥</span><span><small>ผลครั้งล่าสุด</small><b>ยังไม่มีประวัติการสอบ</b></span><strong>ดูประวัติ ›</strong></a>
+    <?php endif; ?>
+  </section>
+
+  <div class="student-exams-desktop">
   <section class="exam-banner">
     <div>
       <span class="exam-kicker">✦ คลังข้อสอบมาตรฐาน &amp; ข้อสอบจากผู้สอน</span>
@@ -95,6 +173,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
     <?php endforeach; ?>
   </section>
   <div id="no-results" class="exam-empty" hidden>ไม่พบข้อสอบที่ตรงกับการค้นหา</div>
+  </div>
 </main>
 <?php include 'includes/bottom-nav.php'; ?>
 </div>
@@ -113,6 +192,28 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
     count.textContent = visible + ' ชุดข้อสอบ'; empty.hidden = visible > 0 || cards.length === 0;
   }
   search.addEventListener('input', filter); subject.addEventListener('change', filter); type.addEventListener('change', filter);
+
+  const mobileSearch = document.getElementById('mobile-exam-search');
+  const mobileRows = [...document.querySelectorAll('.mobile-exam-row')];
+  const mobileButtons = [...document.querySelectorAll('[data-mobile-exam-filter]')];
+  let mobileType = 'all';
+  function filterMobile() {
+    const query = (mobileSearch?.value || '').trim().toLocaleLowerCase('th');
+    let visible = 0;
+    mobileRows.forEach(row => {
+      const show = (!query || row.dataset.mobileSearch.includes(query)) && (mobileType === 'all' || row.dataset.mobileType === mobileType);
+      row.hidden = !show;
+      if (show) visible++;
+    });
+    const emptyMobile = document.querySelector('.mobile-exam-empty');
+    if (emptyMobile) emptyMobile.hidden = visible > 0;
+  }
+  mobileSearch?.addEventListener('input', filterMobile);
+  mobileButtons.forEach(button => button.addEventListener('click', () => {
+    mobileType = button.dataset.mobileExamFilter;
+    mobileButtons.forEach(item => item.classList.toggle('active', item === button));
+    filterMobile();
+  }));
 })();
 </script>
 </body>

@@ -10,6 +10,7 @@
 
 .student-portal [hidden] { display: none !important; }
 .student-portal button:disabled { cursor: not-allowed; opacity: .5; }
+.student-mobile-exams { display:none; }
 .exam-page, .test-shell, .result-wrap { width: 100%; max-width: 1440px; margin: 0 auto; padding: 32px; }
 .exam-banner {
   display: flex; align-items: center; justify-content: space-between; gap: 28px;
@@ -119,6 +120,46 @@
 
 @media (max-width: 768px) {
   .exam-page,.test-shell,.result-wrap { padding:14px 14px 24px; }
+  .student-exams-desktop { display:none !important; }
+  .student-mobile-exams { display:block; }
+  .mobile-exams-intro { margin:2px 6px 18px; }
+  .mobile-exams-intro p { margin:0 0 3px; color:#1548d8; font-size:13px; font-weight:900; letter-spacing:.08em; }
+  .mobile-exams-intro h1 { margin:0; color:#071936; font-size:30px; font-weight:900; line-height:1.12; letter-spacing:-.045em; }
+  .mobile-exams-intro span { display:block; margin-top:7px; color:#657695; font-size:14px; font-weight:600; }
+  .mobile-exam-hero { position:relative; min-height:244px; overflow:hidden; padding:20px; border-radius:20px; color:#fff; background:linear-gradient(135deg,#061a40,#0b2d68 58%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.16); }
+  .mobile-exam-hero::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 84% 10%,rgba(49,96,229,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.04) 23px 24px); pointer-events:none; }
+  .mobile-exam-hero-copy { position:relative; z-index:3; width:58%; padding-top:27px; }
+  .mobile-exam-hero-copy small { display:block; color:#fff; font-size:12px; font-weight:800; }
+  .mobile-exam-hero h2 { display:-webkit-box; overflow:hidden; margin:17px 0 5px; color:#fff; font-size:24px; font-weight:900; line-height:1.2; letter-spacing:-.035em; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+  .mobile-exam-hero p { margin:0; color:#dce8ff; font-size:14px; font-weight:700; }
+  .mobile-exam-hero-copy a { display:inline-flex; min-height:48px; margin-top:14px; padding:0 17px; align-items:center; justify-content:center; border-radius:15px; color:#fff; background:linear-gradient(135deg,#ff168b,#ed0878); box-shadow:0 9px 20px rgba(255,22,139,.25); font-size:15px; font-weight:900; text-decoration:none; }
+  .mobile-exam-hero img { position:absolute; z-index:2; width:213px; height:213px; right:-35px; bottom:8px; object-fit:contain; filter:drop-shadow(0 13px 16px rgba(0,0,0,.42)); }
+  .mobile-exam-search { display:grid; grid-template-columns:minmax(0,1fr) 54px; gap:8px; margin-top:14px; }
+  .mobile-exam-search label { display:flex; min-width:0; height:50px; align-items:center; gap:9px; padding:0 14px; border:1px solid #dbe4f2; border-radius:15px; background:#fff; }
+  .mobile-exam-search label span { color:#071936; font-size:18px; font-weight:900; }
+  .mobile-exam-search input { min-width:0; width:100%; height:100%; border:0; outline:0; color:#071936; background:transparent; font-size:13px; font-weight:600; }
+  .mobile-exam-search input::placeholder { color:#7888a1; }
+  .mobile-exam-search button { border:1px solid #dbe4f2; border-radius:15px; color:#071936; background:#fff; font-size:20px; }
+  .mobile-exam-chips { display:flex; gap:7px; overflow-x:auto; margin:13px 0 21px; padding-bottom:2px; scrollbar-width:none; }
+  .mobile-exam-chips::-webkit-scrollbar { display:none; }
+  .mobile-exam-chips button { flex:none; min-width:78px; min-height:42px; padding:0 15px; border:0; border-radius:999px; color:#071936; background:#e8eeff; font-size:12px; font-weight:900; }
+  .mobile-exam-chips button.active { color:#fff; background:#ff168b; }
+  .mobile-exam-list { display:grid; gap:10px; }
+  .mobile-exam-row { display:grid; grid-template-columns:58px minmax(0,1fr) 40px; align-items:center; gap:12px; min-height:101px; padding:13px; border:1px solid #dbe4f2; border-radius:16px; color:#071936; background:#fff; box-shadow:0 5px 18px rgba(6,26,64,.045); text-decoration:none; }
+  .mobile-exam-code { display:grid; width:56px; height:56px; place-items:center; border-radius:15px; color:#fff; background:linear-gradient(145deg,#061a40,#1548d8); font-size:18px; font-weight:900; }
+  .mobile-exam-row > span:nth-child(2) { min-width:0; }
+  .mobile-exam-row b,.mobile-exam-row small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .mobile-exam-row b { color:#071936; font-size:14px; font-weight:900; }
+  .mobile-exam-row small { margin-top:4px; color:#657695; font-size:10px; font-weight:700; }
+  .mobile-exam-row > strong { display:grid; width:38px; height:38px; place-items:center; border-radius:50%; color:#ff168b; background:#ffe0f0; font-size:29px; font-weight:500; }
+  .mobile-exam-empty { padding:30px 16px; border:1px dashed #cbd7e8; border-radius:16px; color:#657695; background:#fff; font-size:12px; text-align:center; }
+  .mobile-latest-result { display:grid; grid-template-columns:40px minmax(0,1fr) auto; align-items:center; gap:10px; min-height:73px; margin-top:14px; padding:12px 15px; border-radius:17px; color:#fff; background:#061a40; box-shadow:0 12px 28px rgba(6,26,64,.14); text-decoration:none; }
+  .mobile-latest-result > span:first-child { font-size:20px; }
+  .mobile-latest-result span:nth-child(2) { min-width:0; }
+  .mobile-latest-result small,.mobile-latest-result b { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .mobile-latest-result small { color:#cbd9f1; font-size:10px; }
+  .mobile-latest-result b { margin-top:2px; color:#fff; font-size:14px; font-weight:900; }
+  .mobile-latest-result strong { color:#ff168b; font-size:12px; font-weight:900; white-space:nowrap; }
   .exam-banner { position:relative; overflow:hidden; min-height:218px; padding:19px; border:0; border-radius:20px; background:linear-gradient(135deg,#061a40,#0b2d68 62%,#1548d8); box-shadow:0 12px 28px rgba(6,26,64,.16); }
   .exam-banner::after { content:""; position:absolute; inset:0; background:radial-gradient(circle at 88% 10%,rgba(56,105,245,.42),transparent 34%),repeating-radial-gradient(circle at 100% 0,transparent 0 22px,rgba(255,255,255,.045) 23px 24px); pointer-events:none; }
   .exam-banner > * { position:relative; z-index:1; }
