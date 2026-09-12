@@ -43,10 +43,14 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($exam['title']) ?> - Next Beyond</title>
-  <link rel="stylesheet" href="../assets/css/output.css"><link rel="stylesheet" href="../assets/css/student-exam.css?v=<?= $cssVersion ?>">
+  <link rel="stylesheet" href="../assets/css/output.css"><link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>"><link rel="stylesheet" href="../assets/css/student-exam.css?v=<?= $cssVersion ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="exam-dark font-sans antialiased">
+<body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
+<div class="min-h-screen flex">
+  <?php include 'includes/sidebar.php'; ?>
+  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
+    <?php include 'includes/topbar.php'; ?>
 <main class="test-shell">
   <header class="test-head">
     <div><div class="test-tag"><?= htmlspecialchars($exam['subject'] ?: 'ทั่วไป') ?> · <?= htmlspecialchars($exam['grade'] ?: 'ทุกระดับ') ?></div><h1><?= htmlspecialchars($exam['title']) ?></h1></div>
@@ -66,6 +70,8 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
     </section>
   </div>
 </main>
+</div>
+</div>
 <form id="submit-form" method="POST" action="submit-test.php"><input type="hidden" name="attempt_id" value="<?= $attemptId ?>"><input type="hidden" name="exam_id" value="<?= $examId ?>"><input type="hidden" id="answers-json" name="answers"></form>
 <script>
 const QUESTIONS = <?= json_encode($questionsForJS, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;

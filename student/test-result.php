@@ -40,10 +40,14 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ผลข้อสอบ - Next Beyond</title>
-  <link rel="stylesheet" href="../assets/css/output.css"><link rel="stylesheet" href="../assets/css/student-exam.css?v=<?= $cssVersion ?>">
+  <link rel="stylesheet" href="../assets/css/output.css"><link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>"><link rel="stylesheet" href="../assets/css/student-exam.css?v=<?= $cssVersion ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="exam-dark font-sans antialiased">
+<body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
+<div class="min-h-screen flex">
+  <?php include 'includes/sidebar.php'; ?>
+  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
+    <?php include 'includes/topbar.php'; ?>
 <main class="result-wrap">
   <section class="result-hero">
     <span class="exam-kicker"><?= htmlspecialchars($grade) ?></span>
@@ -59,7 +63,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
     <section class="skill-card">
       <h2 style="font-size:17px;margin-bottom:16px">คะแนนแยกตามทักษะ</h2>
       <?php foreach ($skillStats as $skill => $stat): $percent = $stat['total'] ? round($stat['correct'] / $stat['total'] * 100) : 0; ?>
-        <div style="margin-top:12px"><div style="display:flex;justify-content:space-between;color:#c8d0dd;font-size:13px"><span><?= htmlspecialchars($skill) ?></span><strong><?= $stat['correct'] ?>/<?= $stat['total'] ?> (<?= $percent ?>%)</strong></div><div style="height:8px;background:#222e46;border-radius:8px;margin-top:7px;overflow:hidden"><div style="height:100%;width:<?= $percent ?>%;background:#655af5;border-radius:8px"></div></div></div>
+        <div style="margin-top:12px"><div style="display:flex;justify-content:space-between;color:#65738a;font-size:13px"><span><?= htmlspecialchars($skill) ?></span><strong><?= $stat['correct'] ?>/<?= $stat['total'] ?> (<?= $percent ?>%)</strong></div><div style="height:8px;background:#edf1f6;border-radius:8px;margin-top:7px;overflow:hidden"><div style="height:100%;width:<?= $percent ?>%;background:#f54696;border-radius:8px"></div></div></div>
       <?php endforeach; ?>
     </section>
   <?php endif; ?>
@@ -84,5 +88,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
     </article>
   <?php endforeach; ?>
 </main>
+</div>
+</div>
 </body>
 </html>

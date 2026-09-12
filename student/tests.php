@@ -37,10 +37,15 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($pageTitle) ?> - Next Beyond Academy</title>
   <link rel="stylesheet" href="../assets/css/output.css">
+  <link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>">
   <link rel="stylesheet" href="../assets/css/student-exam.css?v=<?= $cssVersion ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="exam-dark font-sans antialiased">
+<body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
+<div class="min-h-screen flex">
+  <?php include 'includes/sidebar.php'; ?>
+  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
+    <?php include 'includes/topbar.php'; ?>
 <main class="exam-page">
   <section class="exam-banner">
     <div>
@@ -91,6 +96,8 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
   </section>
   <div id="no-results" class="exam-empty" hidden>ไม่พบข้อสอบที่ตรงกับการค้นหา</div>
 </main>
+</div>
+</div>
 <script>
 (() => {
   const search = document.getElementById('exam-search'), subject = document.getElementById('subject-filter');
