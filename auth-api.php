@@ -90,10 +90,18 @@ try {
             $normalizedIdentity = strtolower($identity);
             if (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
                 $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity LIMIT 1');
+                $stmt->execute([':identity' => $normalizedIdentity]);
             } else {
-                $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE phone = :identity LIMIT 1');
+                // Remove spaces and dashes from input for phone search
+                $cleanPhone = preg_replace('/[^0-9]/', '', $identity);
+                // If it starts with 66, convert to 0 (e.g. 66812345678 -> 0812345678)
+                if (str_starts_with($cleanPhone, '66') && strlen($cleanPhone) >= 10) {
+                    $cleanPhone = '0' . substr($cleanPhone, 2);
+                }
+                
+                $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE REPLACE(REPLACE(phone, " ", ""), "-", "") = :cleanPhone OR phone = :rawIdentity LIMIT 1');
+                $stmt->execute([':cleanPhone' => $cleanPhone, ':rawIdentity' => $identity]);
             }
-            $stmt->execute([':identity' => $normalizedIdentity]);
         }
         $user = $stmt->fetch();
         if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {
