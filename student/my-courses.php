@@ -41,7 +41,7 @@ $statusLabels = ['active' => 'กำลังเรียน', 'completed' => '�
   <?php include 'includes/sidebar.php'; ?>
   <div class="flex-1 ml-[240px] max-[960px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
-    <main class="p-8 max-[640px]:p-4 max-[768px]:pb-24">
+    <main class="p-8 max-[640px]:p-4">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">
         <p class="student-kicker mb-2">My learning</p>
         <div class="flex items-end justify-between gap-5 flex-wrap">

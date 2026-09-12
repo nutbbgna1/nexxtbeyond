@@ -78,7 +78,7 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
   <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 transition-all duration-300 min-w-0">
     <?php include 'includes/topbar.php'; ?>
 
-    <main class="flex-1 p-8 max-[640px]:p-4 max-[768px]:pb-24">
+    <main class="flex-1 p-8 max-[640px]:p-4">
 
       <!-- Welcome Banner -->
       <div class="mb-8 rounded-xl bg-navy-950 p-7 text-white border border-[#17304f]">

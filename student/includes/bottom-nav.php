@@ -34,7 +34,7 @@ $mobileNav = [
 ];
 ?>
 <!-- Bottom Nav: ซ่อนบน Desktop/Tablet (แสดงเฉพาะ max-width: 768px) -->
-<nav class="hidden max-[768px]:flex fixed bottom-0 left-0 w-full h-[64px] bg-white border-t border-[#e8ecf2] shadow-[0_-2px_10px_rgba(15,42,83,0.04)] z-40 items-center justify-around px-2 pb-safe">
+<nav class="hidden max-[768px]:flex sticky bottom-0 w-full h-[64px] bg-white border-t border-[#e8ecf2] shadow-[0_-2px_10px_rgba(15,42,83,0.04)] z-40 items-center justify-around px-2 pb-safe mt-auto">
     <?php foreach ($mobileNav as $item): ?>
         <?php $isActive = $currentPage === $item['url']; ?>
         <a href="<?= htmlspecialchars($item['url']) ?>" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors <?= $isActive ? 'text-pink-500' : 'text-[#65738a] hover:text-navy-950' ?>">
