@@ -33,13 +33,13 @@ $statusLabels = ['active' => 'กำลังเรียน', 'completed' => '�
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><?= htmlspecialchars($pageTitle) ?> - Next Beyond</title>
-  <link rel="stylesheet" href="../assets/css/output.css">
+  <link rel="stylesheet" href="../assets/css/output.css?v=<?= filemtime(__DIR__ . '/../assets/css/output.css') ?>">
   <link rel="stylesheet" href="../assets/css/student-portal.css?v=<?= filemtime(__DIR__ . '/../assets/css/student-portal.css') ?>">
 </head>
 <body class="student-portal bg-[#f4f7fb] text-navy-950">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 ml-[240px] max-[960px]:ml-0 min-w-0">
+  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="p-8 max-[640px]:p-4">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">
