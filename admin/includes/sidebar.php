@@ -7,6 +7,7 @@ $adminMenu = [
   "LEARNING" => [
     ["courses.php", "คอร์สเรียน"],
     ["curriculum.php", "บทเรียนในคอร์ส"],
+    ["roadmap.php", "Study Roadmap"],
     ["../science-studio/", "Science Learning Studio"],
     ["teachers.php", "ครูผู้สอน"],
     ["calendar.php", "ปฏิทินและตารางสอน"]
