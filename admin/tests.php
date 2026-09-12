@@ -1,85 +1,22 @@
 <?php
 require_once __DIR__ . '/includes/access.php';
-$pageTitle = 'แบบทดสอบ (Tests)';
-$pageDesc = 'จัดการแบบทดสอบ Placement Test, Quiz, และ Post-test';
+$pageTitle = 'คลังข้อสอบและการประเมินผล';
+$pageDesc = 'จัดการข้อสอบมาตรฐาน แบบทดสอบ และข้อสอบที่สร้างด้วย AI';
 $currentPage = 'tests.php';
 ?>
-<!DOCTYPE html>
-<html lang="th" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?> - Next Beyond Admin</title>
-    <link rel="stylesheet" href="../assets/css/output.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../assets/js/admin-guard.js"></script>
-    <script defer src="../assets/js/admin-tests.js?v=<?= rawurlencode((string) filemtime(__DIR__ . '/../assets/js/admin-tests.js')) ?>"></script>
-</head>
-<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased selection:bg-pink-500/20 selection:text-pink-600">
-
-  <div class="min-h-screen flex">
-    <!-- Sidebar -->
-    <?php include 'includes/sidebar.php'; ?>
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0 transition-all duration-300">
-      <!-- Topbar -->
-      <?php include 'includes/topbar.php'; ?>
-
-      <!-- Content -->
-      <main class="flex-1 p-8 max-[640px]:p-4 overflow-y-auto">
-        <div id="tests-created-notice" class="hidden mb-5 rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-5 py-4 text-[#166534] font-bold text-[14px]"></div>
-        <!-- Actions & Filters -->
-        <div class="mb-6 flex items-center justify-between gap-4 max-[640px]:flex-col max-[640px]:items-stretch">
-          <div class="flex items-center gap-3">
-            <a href="ai-exam.php" class="h-10 px-5 rounded-xl bg-pink-500 text-white text-[14px] font-bold shadow-[0_4px_12px_rgba(231,45,130,0.3)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              สร้างแบบทดสอบใหม่
-            </a>
-          </div>
-          
-          <div class="flex items-center gap-3 bg-white p-1 rounded-[14px] border border-[#dce4ef] shadow-sm">
-            <div class="relative min-w-[240px] max-[640px]:min-w-0 max-[640px]:flex-1">
-              <input id="tests-search" type="search" placeholder="ค้นหาชื่อแบบทดสอบ..." class="w-full h-9 pl-10 pr-4 rounded-lg bg-transparent border-none outline-none text-[14px] text-navy-950 placeholder:text-[#94a3b8]">
-              <svg class="w-4 h-4 text-[#94a3b8] absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </div>
-            <div class="w-[1px] h-6 bg-[#e8ecf2]"></div>
-            <select id="tests-type-filter" class="h-9 px-3 rounded-lg bg-transparent border-none outline-none text-[13px] font-medium text-[#65738a] cursor-pointer">
-              <option value="">ทุกประเภท</option>
-              <option value="placement">Placement Test</option>
-              <option value="pretest">Pre-test</option>
-              <option value="quiz">Quiz</option>
-              <option value="posttest">Post-test</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div class="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(15,42,83,0.03)] border border-[#e8ecf2] overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr class="bg-[#f8fafc] border-b border-[#e8ecf2]">
-                  <th class="px-4 py-3 text-[12px] font-black tracking-wider text-[#65738a] uppercase">ชื่อแบบทดสอบ</th>
-                  <th class="px-4 py-3 text-[12px] font-black tracking-wider text-[#65738a] uppercase">วิชา / ระดับ</th>
-                  <th class="px-4 py-3 text-[12px] font-black tracking-wider text-[#65738a] uppercase text-center">จำนวนข้อ</th>
-                  <th class="px-4 py-3 text-[12px] font-black tracking-wider text-[#65738a] uppercase text-center">ผู้ทำ (ครั้ง)</th>
-                  <th class="px-4 py-3 text-[12px] font-black tracking-wider text-[#65738a] uppercase">เผยแพร่ / สิทธิ์</th>
-                  <th class="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody id="admin-tests-tbody" class="divide-y divide-[#e8ecf2]">
-                <!-- Rendered by JS -->
-              </tbody>
-            </table>
-          </div>
-          <div class="p-4 border-t border-[#e8ecf2] flex items-center justify-between max-[640px]:flex-col max-[640px]:gap-4">
-            <div id="tests-count" class="text-[13px] text-[#65738a]">0 รายการ</div>
-          </div>
-        </div>
-      </main>
-    </div>
-  </div>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="th"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title><?= $pageTitle ?> - Next Beyond Admin</title>
+<link rel="stylesheet" href="../assets/css/output.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="../assets/js/admin-guard.js"></script><script defer src="../assets/js/admin-tests.js?v=20260912-2"></script>
+<style>
+.exam-main{padding:30px;background:#f4f7fb;min-height:calc(100vh - 72px)}.exam-hero{position:relative;overflow:hidden;border-radius:24px;padding:30px;background:linear-gradient(125deg,#102b58 0%,#263f78 52%,#6b54d9 100%);color:#fff;box-shadow:0 18px 45px rgba(15,42,83,.16);display:flex;align-items:center;justify-content:space-between;gap:28px}.exam-hero:after{content:"";position:absolute;width:280px;height:280px;right:18%;top:-160px;border-radius:50%;background:rgba(255,255,255,.09)}.hero-copy,.hero-actions{position:relative;z-index:1}.hero-tag{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid rgba(255,255,255,.24);border-radius:99px;background:rgba(255,255,255,.1);font-size:11px;font-weight:800}.exam-hero h1{font-size:26px;color:#fff;margin-top:12px}.exam-hero p{font-size:13px;color:#d8e2f4;margin-top:7px;max-width:650px;line-height:1.7}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}.exam-btn{height:43px;padding:0 17px;border:1px solid #dce4ef;border-radius:12px;background:#fff;color:#253d61;font-size:13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:.16s}.exam-btn:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(15,42,83,.1)}.exam-btn.primary{border-color:#f54696;background:#f54696;color:#fff}.hero-actions .exam-btn{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.13);color:#fff;backdrop-filter:blur(4px)}.hero-actions .exam-btn.primary{background:#f54696;border-color:#f54696}.exam-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}.stat{padding:17px 19px;border:1px solid #e4eaf2;border-radius:17px;background:#fff}.stat strong{display:block;font-size:25px;color:#102b58}.stat span{font-size:11px;color:#718097;font-weight:700}.exam-toolbar{display:flex;justify-content:space-between;gap:14px;margin:20px 0}.search-wrap{position:relative;flex:1;max-width:430px}.search-wrap input{width:100%;height:44px;padding:0 16px 0 42px;border:1px solid #dce4ef;border-radius:13px;background:#fff;outline:none;font-size:13px}.search-wrap svg{position:absolute;left:14px;top:14px;width:16px;color:#8491a5}.filters{display:flex;gap:9px;flex-wrap:wrap}.filters select{height:44px;padding:0 34px 0 13px;border:1px solid #dce4ef;border-radius:12px;background:#fff;color:#53647d;font-size:12px;font-weight:700}.exam-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.exam-card{position:relative;display:flex;flex-direction:column;min-height:320px;padding:20px;border:1px solid #e4eaf2;border-radius:20px;background:#fff;box-shadow:0 5px 22px rgba(15,42,83,.045);transition:.18s}.exam-card:hover{transform:translateY(-2px);border-color:#cad5e4;box-shadow:0 13px 32px rgba(15,42,83,.09)}.card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.type-badge{padding:5px 9px;border-radius:8px;font-size:10px;font-weight:900;text-transform:uppercase}.type-quiz{background:#eaf2ff;color:#2563be}.type-placement{background:#f1edff;color:#7149ca}.type-pretest{background:#eafaf3;color:#16845d}.type-posttest{background:#fff3e5;color:#c76a14}.ai-badge{font-size:10px;font-weight:900;color:#dc2e7c}.exam-title{font-size:16px;font-weight:900;color:#102b58;margin-top:16px;line-height:1.45}.exam-desc{font-size:12px;color:#718097;line-height:1.6;margin-top:7px;min-height:39px}.exam-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:17px 0}.meta{padding:9px 7px;border-radius:10px;background:#f7f9fc;text-align:center}.meta b{display:block;font-size:13px;color:#28415f}.meta small{font-size:9px;color:#8491a5}.card-settings{margin-top:auto;padding-top:13px;border-top:1px solid #edf1f6}.setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:11px;color:#65738a;font-weight:700}.switch{width:39px;height:22px;border:0;border-radius:20px;background:#cbd5e1;padding:2px;cursor:pointer}.switch:after{content:"";display:block;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:.15s}.switch.on{background:#f54696}.switch.on:after{transform:translateX(17px)}.card-actions{display:flex;gap:8px;margin-top:12px}.card-actions .exam-btn{height:37px;padding:0 12px;font-size:11px;flex:1}.more-btn{flex:0 0 37px!important;padding:0!important}.empty-state{grid-column:1/-1;padding:65px 20px;border:1px dashed #cbd5e1;border-radius:20px;background:#fff;text-align:center;color:#718097}.notice{display:none;margin-bottom:18px;padding:13px 16px;border:1px solid #bde9d0;border-radius:12px;background:#effcf5;color:#18714f;font-size:12px;font-weight:800}.notice.show{display:block}@media(max-width:1200px){.exam-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.exam-main{padding:16px}.exam-hero{padding:23px;flex-direction:column;align-items:flex-start}.exam-hero h1{font-size:22px}.exam-stats{grid-template-columns:repeat(2,1fr)}.exam-toolbar{flex-direction:column}.search-wrap{max-width:none}.exam-grid{grid-template-columns:1fr}.hero-actions{width:100%}.hero-actions .exam-btn{flex:1}}
+</style></head>
+<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased"><div class="min-h-screen flex"><?php include 'includes/sidebar.php'; ?><div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0"><?php include 'includes/topbar.php'; ?>
+<main class="exam-main"><div id="tests-created-notice" class="notice"></div>
+<section class="exam-hero"><div class="hero-copy"><span class="hero-tag">✦ คลังข้อสอบมาตรฐาน & ข้อสอบ AI</span><h1>จัดการแบบทดสอบและการประเมินผล</h1><p>สร้างคลังข้อสอบ ตรวจคำถาม กำหนดเวลาและสิทธิ์การเข้าถึง พร้อมเผยแพร่ให้นักเรียนทำผ่าน Student Portal</p></div><div class="hero-actions"><a class="exam-btn" href="calendar.php">▣ ดูตารางสอบ</a><a class="exam-btn" href="question-bank.php">☷ Question Bank</a><a class="exam-btn primary" href="ai-exam.php">✦ สร้างข้อสอบ AI</a></div></section>
+<section class="exam-stats"><div class="stat"><strong id="stat-total">0</strong><span>ข้อสอบทั้งหมด</span></div><div class="stat"><strong id="stat-published">0</strong><span>กำลังเผยแพร่</span></div><div class="stat"><strong id="stat-questions">0</strong><span>คำถามในคลัง</span></div><div class="stat"><strong id="stat-attempts">0</strong><span>การทำข้อสอบทั้งหมด</span></div></section>
+<div class="exam-toolbar"><div class="search-wrap"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg><input id="tests-search" type="search" placeholder="ค้นหาชื่อ วิชา หรือระดับ..."></div><div class="filters"><select id="subject-filter"><option value="">ทุกวิชา</option></select><select id="tests-type-filter"><option value="">ทุกประเภท</option><option value="placement">Placement Test</option><option value="pretest">Pre-test</option><option value="quiz">Quiz</option><option value="posttest">Post-test</option></select><select id="status-filter"><option value="">ทุกสถานะ</option><option value="published">เผยแพร่แล้ว</option><option value="draft">ยังไม่เผยแพร่</option></select></div></div>
+<section id="exam-grid" class="exam-grid"><div class="empty-state">กำลังโหลดคลังข้อสอบ...</div></section><div id="tests-count" style="margin-top:16px;font-size:12px;color:#718097">0 รายการ</div>
+</main></div></div></body></html>
