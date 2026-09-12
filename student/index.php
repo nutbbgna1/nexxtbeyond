@@ -59,6 +59,89 @@ $stmtEnrolled->execute([':uid' => $currentUser['id']]);
 $enrolledCourses = $stmtEnrolled->fetchAll();
 
 $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['last_name'] ?? '')) ?: 'นักเรียน';
+$firstName = trim((string)($currentUser['first_name'] ?? '')) ?: 'นักเรียน';
+
+// ข้อมูลหน้าแรก Mobile: บทเรียนถัดไป ภารกิจจาก Roadmap และกิจกรรมรายสัปดาห์
+$featuredCourse = $enrolledCourses[0] ?? null;
+$featuredProgress = $featuredCourse ? max(0, min(100, (int)round((float)$featuredCourse['progress_percent']))) : 0;
+$featuredLesson = null;
+$featuredLessonTotal = 0;
+$featuredLessonDone = 0;
+if ($featuredCourse) {
+    $lessonSummary = $pdo->prepare(
+        'SELECT COUNT(l.id) AS total_lessons,
+                SUM(CASE WHEN lp.is_completed = 1 THEN 1 ELSE 0 END) AS completed_lessons
+         FROM lessons l
+         LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.user_id = ?
+         WHERE l.course_id = ?'
+    );
+    $lessonSummary->execute([(int)$currentUser['id'], (int)$featuredCourse['id']]);
+    $lessonCounts = $lessonSummary->fetch() ?: [];
+    $featuredLessonTotal = (int)($lessonCounts['total_lessons'] ?? 0);
+    $featuredLessonDone = (int)($lessonCounts['completed_lessons'] ?? 0);
+
+    $nextLesson = $pdo->prepare(
+        'SELECT l.id, l.title, l.duration_minutes
+         FROM lessons l
+         LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.user_id = ?
+         WHERE l.course_id = ? AND COALESCE(lp.is_completed, 0) = 0
+         ORDER BY l.sort_order, l.id LIMIT 1'
+    );
+    $nextLesson->execute([(int)$currentUser['id'], (int)$featuredCourse['id']]);
+    $featuredLesson = $nextLesson->fetch() ?: null;
+}
+
+$missionStmt = $pdo->prepare(
+    "SELECT t.id, t.title, t.subject, t.completion_type, t.ref_lesson_id, t.ref_exam_id,
+            t.points_reward, COALESCE(p.status, 'not_started') AS progress_status
+     FROM roadmap_enrollments re
+     INNER JOIN roadmaps r ON r.id = re.roadmap_id AND r.status = 'published'
+     INNER JOIN roadmap_tasks t ON t.roadmap_id = re.roadmap_id AND t.is_active = 1
+     LEFT JOIN roadmap_task_progress p ON p.task_id = t.id AND p.user_id = re.user_id
+     WHERE re.user_id = ? AND re.status = 'active'
+     ORDER BY FIELD(COALESCE(p.status, 'not_started'), 'in_progress', 'not_started', 'locked', 'completed', 'exempted'),
+              COALESCE(t.due_date, '9999-12-31'), t.sort_order, t.id
+     LIMIT 2"
+);
+$missionStmt->execute([(int)$currentUser['id']]);
+$mobileMissions = $missionStmt->fetchAll();
+
+if (!$mobileMissions && $featuredCourse) {
+    $mobileMissions[] = [
+        'title' => $featuredLesson['title'] ?? $featuredCourse['title'],
+        'subject' => $featuredCourse['subject'] ?: 'คอร์สของฉัน',
+        'completion_type' => 'course', 'progress_status' => 'in_progress',
+        'ref_lesson_id' => $featuredLesson['id'] ?? null, 'ref_exam_id' => null,
+        'points_reward' => 0,
+    ];
+}
+if (count($mobileMissions) < 2 && !empty($availableExams)) {
+    $mobileMissions[] = [
+        'title' => $availableExams[0]['title'], 'subject' => $availableExams[0]['subject'] ?: 'แบบทดสอบ',
+        'completion_type' => 'submit_test', 'progress_status' => 'not_started',
+        'ref_lesson_id' => null, 'ref_exam_id' => $availableExams[0]['id'], 'points_reward' => 0,
+    ];
+}
+
+$weekStart = new DateTimeImmutable('monday this week');
+$weekEnd = $weekStart->modify('+7 days');
+$activityStmt = $pdo->prepare(
+    'SELECT activity_date FROM (
+       SELECT DATE(COALESCE(last_watched_at, completed_at, started_at)) AS activity_date
+       FROM lesson_progress WHERE user_id = ?
+       UNION
+       SELECT DATE(completed_at) AS activity_date
+       FROM test_attempts WHERE user_id = ? AND completed_at IS NOT NULL
+     ) activity
+     WHERE activity_date >= ? AND activity_date < ?'
+);
+$activityStmt->execute([(int)$currentUser['id'], (int)$currentUser['id'], $weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+$activeWeekDays = array_fill(0, 7, false);
+foreach ($activityStmt->fetchAll(PDO::FETCH_COLUMN) as $activityDate) {
+    $dayIndex = (int)(new DateTimeImmutable((string)$activityDate))->format('N') - 1;
+    if ($dayIndex >= 0 && $dayIndex < 7) $activeWeekDays[$dayIndex] = true;
+}
+$weekDayLabels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
 ?>
 <!DOCTYPE html>
 <html lang="th" class="scroll-smooth">
@@ -79,6 +162,75 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
     <?php include 'includes/topbar.php'; ?>
 
     <main class="flex-1 p-8 max-[640px]:p-4">
+
+      <section class="student-mobile-home" aria-label="หน้าแรกนักเรียนบนมือถือ">
+        <div class="mobile-home-intro">
+          <p>สวัสดี <?= htmlspecialchars($firstName) ?> 👋</p>
+          <h1>ก้าวต่อไปของคุณ</h1>
+          <span>เรียนทีละก้าว ไปให้ไกลกว่าเดิม</span>
+        </div>
+
+        <article class="mobile-learning-hero">
+          <div class="mobile-hero-orbit" aria-hidden="true"></div>
+          <div class="mobile-hero-copy">
+            <?php if ($featuredCourse): ?>
+              <span class="mobile-hero-label">เรียนต่อจากเดิม</span>
+              <h2><?= htmlspecialchars($featuredCourse['title']) ?></h2>
+              <p><?= htmlspecialchars($featuredLesson['title'] ?? ($featuredCourse['subject'] ?: 'บทเรียนของคุณ')) ?></p>
+              <div class="mobile-progress"><i style="width:<?= $featuredProgress ?>%"></i></div>
+              <small><?= $featuredLessonTotal > 0 ? 'เรียนแล้ว ' . $featuredLessonDone . ' จาก ' . $featuredLessonTotal . ' บท' : 'ความคืบหน้า ' . $featuredProgress . '%' ?></small>
+              <a href="<?= $featuredLesson ? '../lesson.php?id=' . (int)$featuredLesson['id'] : 'my-courses.php' ?>" class="mobile-primary">▶ เรียนต่อ</a>
+            <?php elseif (!empty($availableExams)): ?>
+              <span class="mobile-hero-label">แนะนำสำหรับคุณ</span>
+              <h2><?= htmlspecialchars($availableExams[0]['subject'] ?: 'ฝึกทำข้อสอบ') ?></h2>
+              <p><?= htmlspecialchars($availableExams[0]['title']) ?></p>
+              <small><?= (int)$availableExams[0]['question_count'] ?> ข้อ<?= $availableExams[0]['time_limit_minutes'] ? ' • ' . (int)$availableExams[0]['time_limit_minutes'] . ' นาที' : '' ?></small>
+              <a href="take-test.php?id=<?= (int)$availableExams[0]['id'] ?>" class="mobile-primary">▶ เริ่มฝึก</a>
+            <?php else: ?>
+              <span class="mobile-hero-label">เริ่มต้นวันนี้</span>
+              <h2>เลือกเส้นทางที่ใช่</h2>
+              <p>สร้างเป้าหมายการเรียนของคุณ</p>
+              <small>มี Roadmap ให้เลือกตามระดับ</small>
+              <a href="roadmap.php" class="mobile-primary">เลือก Roadmap</a>
+            <?php endif; ?>
+          </div>
+          <img class="mobile-owl" src="../assets/images/next-owl.png" alt="มาสคอตนกฮูก Next Beyond">
+        </article>
+
+        <nav class="mobile-quick-grid" aria-label="เมนูลัด">
+          <a href="tests.php"><span>▣</span><b>ทำข้อสอบ</b></a>
+          <a href="my-tests.php"><span>▥</span><b>ผลการเรียน</b></a>
+          <a href="roadmap.php"><span>◎</span><b>เป้าหมาย</b></a>
+          <a href="score-calculator.php"><span>▦</span><b>TCAS</b></a>
+        </nav>
+
+        <div class="mobile-section-heading"><h2>ภารกิจวันนี้</h2><a href="roadmap.php">ดูทั้งหมด</a></div>
+        <div class="mobile-task-list">
+          <?php if (!$mobileMissions): ?>
+            <a class="mobile-task" href="roadmap.php"><span class="mobile-task-check"></span><span><b>เลือก Study Roadmap</b><small>วางแผนการเรียนให้ตรงกับเป้าหมาย</small></span><em>เริ่มเลย</em></a>
+          <?php else: foreach (array_slice($mobileMissions, 0, 2) as $mission):
+            $isMissionDone = in_array($mission['progress_status'], ['completed', 'exempted'], true);
+            $missionUrl = 'roadmap.php';
+            if (!empty($mission['ref_lesson_id'])) $missionUrl = '../lesson.php?id=' . (int)$mission['ref_lesson_id'];
+            elseif (!empty($mission['ref_exam_id'])) $missionUrl = 'take-test.php?id=' . (int)$mission['ref_exam_id'];
+          ?>
+            <a class="mobile-task <?= $isMissionDone ? 'done' : '' ?>" href="<?= htmlspecialchars($missionUrl) ?>">
+              <span class="mobile-task-check"><?= $isMissionDone ? '✓' : '' ?></span>
+              <span><b><?= htmlspecialchars($mission['title']) ?></b><small><?= htmlspecialchars($mission['subject'] ?: 'ภารกิจใน Roadmap') ?></small></span>
+              <em><?= (int)$mission['points_reward'] > 0 ? '+' . (int)$mission['points_reward'] . ' NC' : 'ไปต่อ' ?></em>
+            </a>
+          <?php endforeach; endif; ?>
+        </div>
+
+        <div class="mobile-week-card">
+          <div><span>สถิติการเรียนรายสัปดาห์</span><strong><?= count(array_filter($activeWeekDays)) ?> วัน</strong></div>
+          <div class="mobile-week-days">
+            <?php foreach ($weekDayLabels as $index => $label): ?><span class="<?= $activeWeekDays[$index] ? 'active' : '' ?>"><?= $label ?></span><?php endforeach; ?>
+          </div>
+        </div>
+      </section>
+
+      <div class="student-home-desktop">
 
       <!-- Welcome Banner -->
       <div class="student-home-hero mb-8 rounded-xl bg-navy-950 p-7 text-white border border-[#17304f]">
@@ -238,6 +390,7 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
             </div>
           <?php endif; ?>
         </div>
+      </div>
       </div>
     </main>
     <?php include 'includes/bottom-nav.php'; ?>
