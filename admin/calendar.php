@@ -1,108 +1,22 @@
 <?php
 require_once __DIR__ . '/includes/access.php';
-$pageTitle = 'ปฏิทินและตารางสอน';
-$pageDesc = 'จัดตารางเรียน สอบ และนัดหมายของทีมผู้สอน';
+$pageTitle = 'ตารางสอน & ปฏิทินครูผู้สอน';
+$pageDesc = 'จัดการตารางเรียน 08:00–22:00 น.';
 $currentPage = 'calendar.php';
 ?>
-<!DOCTYPE html>
-<html lang="th" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= $pageTitle ?> - Next Beyond Admin</title>
-  <link rel="stylesheet" href="../assets/css/output.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="../assets/js/admin-guard.js"></script>
-  <script defer src="../assets/js/admin-calendar.js"></script>
-  <style>
-    .calendar-field{width:100%;height:44px;padding:0 14px;border:1px solid #dce4ef;border-radius:12px;background:#fff;outline:none;font-size:13px}
-    .calendar-field:focus{border-color:#f54696;box-shadow:0 0 0 3px rgba(245,70,150,.08)}
-    textarea.calendar-field{height:auto;padding-top:11px;padding-bottom:11px;resize:vertical}
-    .calendar-day{min-height:128px;border-right:1px solid #e8ecf2;border-bottom:1px solid #e8ecf2;background:#fff;transition:background .15s}
-    .calendar-day:hover{background:#fbfcfe}.calendar-day:nth-child(7n){border-right:0}.calendar-day.outside{background:#f8fafc;color:#aebbd0}
-    @media(max-width:760px){.calendar-day{min-height:92px}.event-detail{display:none}}
-  </style>
-</head>
-<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased">
-<div class="min-h-screen flex">
-  <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0">
-    <?php include 'includes/topbar.php'; ?>
-    <main class="flex-1 p-8 max-[640px]:p-4">
-      <div id="calendar-notice" class="hidden mb-5 px-5 py-4 rounded-xl border text-[13px] font-bold"></div>
-
-      <div class="grid grid-cols-3 gap-4 mb-5 max-[700px]:grid-cols-1">
-        <div class="bg-white rounded-[18px] border border-[#e8ecf2] px-5 py-4 flex items-center gap-4">
-          <div class="w-11 h-11 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center text-xl">◫</div>
-          <div><div id="calendar-month-count" class="text-[25px] font-black leading-none">0</div><div class="text-[12px] text-[#65738a] mt-1">กิจกรรมเดือนนี้</div></div>
-        </div>
-        <div class="bg-white rounded-[18px] border border-[#e8ecf2] px-5 py-4 flex items-center gap-4">
-          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">◷</div>
-          <div><div id="calendar-today-count" class="text-[25px] font-black leading-none">0</div><div class="text-[12px] text-[#65738a] mt-1">กิจกรรมวันนี้</div></div>
-        </div>
-        <div class="bg-white rounded-[18px] border border-[#e8ecf2] px-5 py-4 flex items-center gap-4">
-          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">✓</div>
-          <div><div id="calendar-hours" class="text-[25px] font-black leading-none">0</div><div class="text-[12px] text-[#65738a] mt-1">ชั่วโมงตามตารางเดือนนี้</div></div>
-        </div>
-      </div>
-
-      <section class="bg-white rounded-[20px] border border-[#e8ecf2] overflow-hidden">
-        <div class="p-5 border-b border-[#e8ecf2] flex items-center justify-between gap-4 flex-wrap">
-          <div class="flex items-center gap-2">
-            <button id="calendar-prev" type="button" class="w-10 h-10 rounded-xl border border-[#dce4ef] hover:bg-[#f8fafc] text-xl" aria-label="เดือนก่อน">‹</button>
-            <button id="calendar-today" type="button" class="h-10 px-4 rounded-xl border border-[#dce4ef] text-[13px] font-bold hover:bg-[#f8fafc]">วันนี้</button>
-            <button id="calendar-next" type="button" class="w-10 h-10 rounded-xl border border-[#dce4ef] hover:bg-[#f8fafc] text-xl" aria-label="เดือนถัดไป">›</button>
-            <h3 id="calendar-heading" class="ml-2 text-[18px] font-extrabold max-[560px]:w-full max-[560px]:ml-0">กำลังโหลด...</h3>
-          </div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <?php if ($consoleUser['role'] === 'admin'): ?>
-              <select id="calendar-teacher-filter" class="h-10 px-3 rounded-xl border border-[#dce4ef] bg-white text-[13px]"><option value="">ครูทุกคน</option></select>
-            <?php endif; ?>
-            <select id="calendar-course-filter" class="h-10 px-3 rounded-xl border border-[#dce4ef] bg-white text-[13px]"><option value="">ทุกคอร์ส</option></select>
-            <button id="add-calendar-event" type="button" class="h-10 px-5 rounded-xl bg-pink-500 text-white text-[13px] font-bold shadow-[0_4px_12px_rgba(231,45,130,.25)]">＋ เพิ่มกิจกรรม</button>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <div class="min-w-[720px]">
-            <div class="grid grid-cols-7 bg-[#f8fafc] border-b border-[#e8ecf2]">
-              <?php foreach (['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'] as $day): ?>
-                <div class="py-3 text-center text-[11px] font-black text-[#65738a] uppercase"><?= $day ?></div>
-              <?php endforeach; ?>
-            </div>
-            <div id="calendar-grid" class="grid grid-cols-7"><div class="col-span-7 p-16 text-center text-[#65738a]">กำลังโหลดปฏิทิน...</div></div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-</div>
-
-<div id="calendar-modal" class="hidden fixed inset-0 z-50 bg-navy-950/50 p-4 items-center justify-center overflow-y-auto">
-  <div class="w-full max-w-[680px] bg-white rounded-[22px] shadow-2xl my-auto">
-    <div class="px-6 py-5 border-b border-[#e8ecf2] flex items-center justify-between">
-      <div><h2 id="calendar-modal-title" class="text-[18px] font-bold">เพิ่มกิจกรรม</h2><p class="text-[12px] text-[#65738a] mt-1">ระบุวัน เวลา และผู้รับผิดชอบ</p></div>
-      <button type="button" data-calendar-close class="text-[26px] text-[#94a3b8]" aria-label="ปิด">×</button>
-    </div>
-    <form id="calendar-form" class="p-6">
-      <input type="hidden" name="id">
-      <div class="grid grid-cols-2 gap-4 max-[580px]:grid-cols-1">
-        <div class="col-span-2 max-[580px]:col-span-1"><label class="block text-[13px] font-bold mb-1.5">ชื่อกิจกรรม *</label><input name="title" required maxlength="300" class="calendar-field" placeholder="เช่น ติว A-Level ฟิสิกส์"></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">ประเภท *</label><select name="eventType" class="calendar-field"><option value="lesson">คาบเรียน</option><option value="exam">สอบ / แบบทดสอบ</option><option value="meeting">ประชุม / นัดหมาย</option><option value="other">อื่น ๆ</option></select></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">สถานะ</label><select name="status" class="calendar-field"><option value="scheduled">ตามกำหนด</option><option value="cancelled">ยกเลิก</option></select></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">วันที่ *</label><input name="eventDate" type="date" required class="calendar-field"></div>
-        <div class="grid grid-cols-2 gap-2"><label class="block text-[13px] font-bold">เริ่ม *<input name="startTime" type="time" required value="09:00" class="calendar-field mt-1.5"></label><label class="block text-[13px] font-bold">สิ้นสุด *<input name="endTime" type="time" required value="10:30" class="calendar-field mt-1.5"></label></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">ครูผู้สอน *</label><select name="teacherId" id="calendar-event-teacher" required class="calendar-field"></select></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">คอร์ส</label><select name="courseId" id="calendar-event-course" class="calendar-field"><option value="">ไม่ผูกกับคอร์ส</option></select></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">สถานที่ / ลิงก์ห้องเรียน</label><input name="location" maxlength="255" class="calendar-field" placeholder="ห้อง 301 หรือ URL"></div>
-        <div><label class="block text-[13px] font-bold mb-1.5">สีบนปฏิทิน</label><input name="color" type="color" value="#2563eb" class="calendar-field p-1.5"></div>
-        <div class="col-span-2 max-[580px]:col-span-1"><label class="block text-[13px] font-bold mb-1.5">รายละเอียดเพิ่มเติม</label><textarea name="notes" rows="3" class="calendar-field"></textarea></div>
-      </div>
-      <div id="calendar-form-error" class="hidden mt-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold"></div>
-      <div class="flex justify-between gap-3 mt-6 pt-5 border-t border-[#e8ecf2]">
-        <button id="delete-calendar-event" type="button" class="hidden h-10 px-4 rounded-xl text-red-600 bg-red-50 font-bold text-[13px]">ลบกิจกรรม</button>
-        <div class="flex gap-3 ml-auto"><button type="button" data-calendar-close class="h-10 px-5 rounded-xl border border-[#dce4ef] font-bold text-[13px]">ยกเลิก</button><button id="save-calendar-event" class="h-10 px-6 rounded-xl bg-pink-500 text-white font-bold text-[13px]">บันทึกกิจกรรม</button></div>
-      </div>
-    </form>
-  </div>
-</div>
-</body>
-</html>
+<!DOCTYPE html><html lang="th"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title><?= $pageTitle ?> - Next Beyond Admin</title>
+<link rel="stylesheet" href="../assets/css/output.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="../assets/js/admin-guard.js"></script><script defer src="../assets/js/admin-calendar.js"></script>
+<style>
+:root{--cb:#060b1d;--cp:#0d162b;--cl:#22304a;--cm:#8593ad;--hh:72px}.schedule-main{background:radial-gradient(circle at 55% 0,rgba(79,70,229,.13),transparent 32%),var(--cb);color:#f8fafc;min-height:calc(100vh - 72px);padding:28px}.cal-hero{border:1px solid var(--cl);border-radius:22px;padding:24px 28px;background:rgba(13,22,43,.82);display:flex;align-items:center;justify-content:space-between;gap:22px;box-shadow:0 20px 55px rgba(0,0,0,.18)}.cal-title{display:flex;align-items:center;gap:13px;font-size:25px;font-weight:900;color:#fff}.cal-title svg{width:28px;color:#8883ff}.cal-sub{color:var(--cm);font-size:13px;margin-top:7px}.cal-actions,.cal-toolbar,.cal-filters,.cal-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cal-btn{height:44px;padding:0 17px;border-radius:13px;border:1px solid #31405b;background:#182338;color:#dbe4f3;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:.18s}.cal-btn:hover{border-color:#586985;background:#202e48}.cal-btn.primary{color:#fff;border:0;background:linear-gradient(135deg,#9747ff,#5549e9);box-shadow:0 8px 22px rgba(98,88,238,.3)}.cal-btn.sync{color:#aba9ff;background:#191c4a;border-color:#3c3a87}.cal-toolbar{justify-content:space-between;margin:22px 0 14px}.teacher-chip{height:42px;padding:0 16px;border:1px solid transparent;border-radius:12px;background:#172238;color:#9aa8bf;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}.teacher-chip.active{background:#5549e9;color:#fff;box-shadow:0 5px 15px rgba(85,73,233,.3)}.cal-select{height:42px;min-width:145px;padding:0 34px 0 13px;border:1px solid #293853;border-radius:11px;background:#111b31;color:#c5d0e2;font-size:12px}.view-group,.zoom-group{display:flex;padding:3px;border:1px solid #293853;border-radius:11px;background:#101a2f}.view-btn,.zoom-btn{height:34px;border:0;border-radius:8px;background:transparent;color:#8e9bb2;font-weight:800;font-size:12px;padding:0 13px;cursor:pointer}.view-btn.active{background:#5549e9;color:#fff}.zoom-btn{width:35px;padding:0;font-size:18px}.date-btn{width:36px;height:36px;border:1px solid #293853;border-radius:9px;background:#111b31;color:#a9b7cc;cursor:pointer;font-size:19px}.date-btn.today{width:auto;padding:0 12px;font-size:12px;font-weight:800}.date-range{font-size:13px;font-weight:800;color:#d7dfec;min-width:150px;text-align:center}.tt-shell{border:1px solid var(--cl);border-radius:20px;overflow:hidden;background:var(--cp);box-shadow:0 24px 60px rgba(0,0,0,.25)}.tt-scroll{overflow:auto;max-height:calc(100vh - 285px);min-height:520px}.tt-inner{min-width:860px}.tt-head{position:sticky;top:0;z-index:15;display:grid;background:#0b1326;border-bottom:1px solid var(--cl)}.time-head,.day-head{height:82px;border-right:1px solid var(--cl);display:flex;align-items:center;justify-content:center}.time-head{color:#6f7e98;font-size:11px;font-weight:800}.day-head{flex-direction:column;gap:5px;color:#d7deeb;font-size:13px;font-weight:900}.day-head.today{background:rgba(79,70,229,.12);color:#9d99ff}.day-count{font-size:10px;color:#73819a;font-weight:600}.tt-body{display:grid}.time-axis{border-right:1px solid var(--cl);background:#0b1427}.time-row{height:var(--hh);border-bottom:1px solid rgba(34,48,74,.72);padding:8px 11px 0 0;text-align:right;color:#667691;font:11px monospace;box-sizing:border-box}.day-col{position:relative;border-right:1px solid var(--cl);height:calc(var(--hh) * 14);background:linear-gradient(to bottom,transparent calc(var(--hh) - 1px),rgba(34,48,74,.68) calc(var(--hh) - 1px),rgba(34,48,74,.68) var(--hh));background-size:100% var(--hh)}.day-col.today{background-color:rgba(79,70,229,.035)}.slot{position:absolute;left:0;right:0;height:calc(var(--hh)/2);cursor:crosshair}.slot:hover{background:rgba(99,102,241,.09)}.event{position:absolute;left:7px;right:7px;z-index:3;border-radius:13px;border:1px solid color-mix(in srgb,var(--ec),white 16%);background:color-mix(in srgb,var(--ec),#071020 55%);box-shadow:0 8px 20px rgba(0,0,0,.18);padding:9px 11px;color:#fff;overflow:hidden;cursor:pointer;text-align:left;transition:.15s}.event:hover{transform:translateY(-1px);filter:brightness(1.13);z-index:9}.event.cancelled{opacity:.48;text-decoration:line-through}.event-head{display:flex;justify-content:space-between;gap:8px}.event-badge{display:inline-flex;align-items:center;gap:6px;max-width:60%;padding:3px 8px;border-radius:6px;background:color-mix(in srgb,var(--ec),transparent 58%);border:1px solid color-mix(in srgb,var(--ec),white 18%);font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden}.dot{width:7px;height:7px;background:color-mix(in srgb,var(--ec),white 22%);border-radius:99px}.event-time{font:700 10px monospace;color:#b8c3d6;white-space:nowrap}.event-title{font-size:13px;font-weight:900;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event-meta{font-size:10px;color:#9cabc1;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event-foot{position:absolute;left:11px;right:9px;bottom:7px;padding-top:6px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;font-size:10px;color:#ccd5e4}.event-icon{width:24px;height:23px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(10,17,35,.38);color:#fff;cursor:pointer}.empty{position:absolute;top:28px;left:50%;transform:translateX(-50%);color:#61708a;font-size:12px;white-space:nowrap;pointer-events:none}.cal-modal{display:none;position:fixed;inset:0;z-index:60;background:rgba(1,5,18,.78);backdrop-filter:blur(5px);padding:20px;align-items:center;justify-content:center;overflow:auto}.cal-modal.open{display:flex}.dialog{width:100%;max-width:680px;border:1px solid #293853;border-radius:22px;background:#101a2f;color:#eef2f8;box-shadow:0 30px 90px rgba(0,0,0,.55)}.dialog-head{padding:20px 24px;border-bottom:1px solid #293853;display:flex;justify-content:space-between}.dialog-head h2{color:#fff;font-size:18px}.dialog-head p{font-size:11px;color:#7f8ca3;margin-top:4px}.dialog-close{border:0;background:none;color:#8795aa;font-size:26px;cursor:pointer}.dialog-body{padding:22px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.span-2{grid-column:span 2}.label{display:block;color:#cad3e2;font-size:12px;font-weight:800}.field{width:100%;height:43px;margin-top:6px;padding:0 13px;border:1px solid #33415b;border-radius:11px;background:#0a1428;color:#fff;outline:none}.field:focus{border-color:#7068f5}textarea.field{height:auto;padding-top:10px;resize:vertical}.dialog-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;padding-top:18px;border-top:1px solid #293853}.form-error{display:none;margin:0 0 14px;padding:11px 13px;border-radius:10px;background:#451628;color:#ff9abb;font-size:12px;font-weight:700}.form-error.show{display:block}.danger{display:none;color:#ff86a9;background:#42162a;border:0}.danger.show{display:inline-flex}@media(max-width:1050px){.cal-hero{align-items:flex-start;flex-direction:column}.cal-toolbar{align-items:flex-start}.schedule-main{padding:20px}.tt-scroll{max-height:none}}@media(max-width:640px){.schedule-main{padding:14px}.cal-hero{padding:19px}.cal-title{font-size:20px}.cal-actions{width:100%}.cal-btn{flex:1;justify-content:center}.cal-filters{overflow:auto;flex-wrap:nowrap;width:100%}.cal-nav{width:100%;justify-content:space-between}.form-grid{grid-template-columns:1fr}.span-2{grid-column:span 1}}
+</style></head>
+<body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased"><div class="min-h-screen flex"><?php include 'includes/sidebar.php'; ?><div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0"><?php include 'includes/topbar.php'; ?>
+<main class="schedule-main"><div id="calendar-notice" class="form-error"></div>
+<section class="cal-hero"><div><div class="cal-title"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 2v3m8-3v3M3 9h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg><span>ตารางสอน & ปฏิทินครูผู้สอน</span></div><p class="cal-sub">จัดการตารางเรียน (08:00–22:00 น.) พร้อมเครื่องมือสำหรับทีมผู้สอน</p></div><div class="cal-actions"><a class="cal-btn sync" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener">↻ เปิด Google Calendar</a><a class="cal-btn primary" href="ai-exam.php">✦ สร้างข้อสอบ AI</a><button id="add-calendar-event" class="cal-btn" type="button">＋ เพิ่มคาบเรียน</button></div></section>
+<div class="cal-toolbar"><div id="teacher-chips" class="cal-filters"></div><div class="cal-nav"><select id="course-filter" class="cal-select"><option value="">ทุกคอร์ส</option></select><button id="cal-prev" class="date-btn">‹</button><button id="cal-today" class="date-btn today">วันนี้</button><div id="date-range" class="date-range">กำลังโหลด...</div><button id="cal-next" class="date-btn">›</button><div class="view-group"><button class="view-btn" data-days="1">1 วัน</button><button class="view-btn active" data-days="3">3 วัน</button><button class="view-btn" data-days="7">7 วัน</button></div><div class="zoom-group"><button id="zoom-out" class="zoom-btn">−</button><button id="zoom-in" class="zoom-btn">＋</button></div></div></div>
+<section class="tt-shell"><div class="tt-scroll"><div id="tt-inner" class="tt-inner"><div id="tt-head" class="tt-head"></div><div id="tt-body" class="tt-body"><div style="padding:60px;text-align:center;color:#71809a">กำลังโหลดตารางสอน...</div></div></div></div></section></main></div></div>
+<div id="calendar-modal" class="cal-modal" role="dialog" aria-modal="true"><div class="dialog"><div class="dialog-head"><div><h2 id="modal-title">เพิ่มคาบเรียน</h2><p>ระบุวัน เวลา และผู้รับผิดชอบ</p></div><button type="button" data-close class="dialog-close">×</button></div><form id="calendar-form" class="dialog-body"><input type="hidden" name="id"><div class="form-grid"><label class="label span-2">ชื่อกิจกรรม *<input name="title" required maxlength="300" class="field"></label><label class="label">ประเภท<select name="eventType" class="field"><option value="lesson">คาบเรียน</option><option value="exam">สอบ / แบบทดสอบ</option><option value="meeting">ประชุม</option><option value="other">อื่น ๆ</option></select></label><label class="label">สถานะ<select name="status" class="field"><option value="scheduled">ตามกำหนด</option><option value="cancelled">ยกเลิก</option></select></label><label class="label">วันที่ *<input name="eventDate" type="date" required class="field"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label class="label">เริ่ม *<input name="startTime" type="time" required class="field"></label><label class="label">สิ้นสุด *<input name="endTime" type="time" required class="field"></label></div><label class="label">ครูผู้สอน *<select name="teacherId" id="event-teacher" required class="field"></select></label><label class="label">คอร์ส<select name="courseId" id="event-course" class="field"></select></label><label class="label">สถานที่ / ลิงก์<input name="location" maxlength="255" class="field"></label><label class="label">สีบนตาราง<input name="color" type="color" value="#e72d82" class="field" style="padding:5px"></label><label class="label span-2">รายละเอียด<textarea name="notes" rows="3" class="field"></textarea></label></div><div id="form-error" class="form-error"></div><div class="dialog-actions"><button id="delete-event" type="button" class="cal-btn danger">ลบกิจกรรม</button><div class="cal-actions" style="margin-left:auto"><button type="button" data-close class="cal-btn">ยกเลิก</button><button id="save-event" class="cal-btn primary">บันทึกกิจกรรม</button></div></div></form></div></div>
+</body></html>

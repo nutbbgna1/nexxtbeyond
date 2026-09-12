@@ -1,201 +1,46 @@
 (() => {
   "use strict";
+  const START=8, END=22, colors=["#5549e9","#e72d82","#168ac8","#d58b08","#7c3aed","#059669"];
+  const days=["วันอา.","วันจ.","วันอ.","วันพ.","วันพฤ.","วันศ.","วันส."], months=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const types={lesson:"คาบเรียน",exam:"สอบ / แบบทดสอบ",meeting:"ประชุม",other:"กิจกรรม"};
+  const modal=document.getElementById("calendar-modal"), form=document.getElementById("calendar-form"), teacherField=document.getElementById("event-teacher"), courseField=document.getElementById("event-course"), courseFilter=document.getElementById("course-filter"), errorBox=document.getElementById("form-error"), deleteBtn=document.getElementById("delete-event");
+  const pad=n=>String(n).padStart(2,"0"), key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`, add=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+  const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  let anchor=new Date(), viewDays=3, hourHeight=72, teacherFilter="", events=[], teachers=[], courses=[], isTeacher=false;
+  anchor=new Date(anchor.getFullYear(),anchor.getMonth(),anchor.getDate());
 
-  const grid = document.getElementById("calendar-grid");
-  const modal = document.getElementById("calendar-modal");
-  const form = document.getElementById("calendar-form");
-  const teacherFilter = document.getElementById("calendar-teacher-filter");
-  const courseFilter = document.getElementById("calendar-course-filter");
-  const teacherField = document.getElementById("calendar-event-teacher");
-  const courseField = document.getElementById("calendar-event-course");
-  const errorBox = document.getElementById("calendar-form-error");
-  const deleteButton = document.getElementById("delete-calendar-event");
-  const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
-  const pad = value => String(value).padStart(2, "0");
-  const dateKey = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-  const typeLabels = {lesson: "คาบเรียน", exam: "สอบ", meeting: "นัดหมาย", other: "อื่น ๆ"};
-  const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-  let viewDate = new Date();
-  viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-  let events = [], teachers = [], courses = [], isTeacher = false;
+  async function api(url="calendar-api",options={}){const r=await fetch(url,{...options,headers:{"Content-Type":"application/json",...(options.headers||{})},cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"ไม่สามารถเชื่อมต่อระบบปฏิทินได้");return d}
+  const visible=()=>Array.from({length:viewDays},(_,i)=>add(anchor,i));
+  function notice(message,fail=false){const box=document.getElementById("calendar-notice");box.textContent=message;box.className="form-error show";Object.assign(box.style,{display:"block",background:fail?"#451628":"#12392f",color:fail?"#ff9abb":"#7ce7bd"});clearTimeout(notice.timer);notice.timer=setTimeout(()=>{box.className="form-error";box.removeAttribute("style")},3500)}
 
-  async function request(url = "calendar-api", options = {}) {
-    const response = await fetch(url, {...options, headers: {"Content-Type": "application/json", ...(options.headers || {})}, cache: "no-store"});
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || "ไม่สามารถเชื่อมต่อระบบปฏิทินได้");
-    return data;
+  function controls(){
+    const chips=document.getElementById("teacher-chips");
+    chips.innerHTML=isTeacher?"":`<button class="teacher-chip ${teacherFilter===""?"active":""}" data-teacher="">ทุกวิชา (ภาพรวม)</button>`;
+    chips.innerHTML+=teachers.map((t,i)=>`<button class="teacher-chip ${teacherFilter===t.id?"active":""}" data-teacher="${esc(t.id)}"><span style="color:${colors[i%colors.length]}">●</span> ${esc(t.name)}</button>`).join("");
+    const selected=courseFilter.value;courseFilter.innerHTML='<option value="">ทุกคอร์ส</option>'+courses.map(c=>`<option value="${esc(c.id)}">${esc(c.title)}</option>`).join("");courseFilter.value=selected;
+    teacherField.innerHTML=teachers.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("");teacherField.disabled=isTeacher;filterCourses();
   }
+  function filterCourses(selected=""){const tid=teacherField.value;const list=courses.filter(c=>!c.teacherId||!tid||c.teacherId===tid);courseField.innerHTML='<option value="">ไม่ผูกกับคอร์ส</option>'+list.map(c=>`<option value="${esc(c.id)}">${esc(c.title)}</option>`).join("");courseField.value=selected}
+  function mins(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+  function googleUrl(e){const start=`${e.eventDate.replaceAll("-","")}T${e.startTime.replace(":","")}00`,end=`${e.eventDate.replaceAll("-","")}T${e.endTime.replace(":","")}00`;return `https://calendar.google.com/calendar/render?${new URLSearchParams({action:"TEMPLATE",text:e.title,dates:`${start}/${end}`,details:e.notes||"",location:e.location||""})}`}
+  function card(e){const start=Math.max(mins(e.startTime),START*60),end=Math.min(mins(e.endTime),END*60);if(end<=start)return"";const top=(start-START*60)/60*hourHeight+4,height=Math.max(46,(end-start)/60*hourHeight-7),foot=height>=84;return `<article class="event ${e.status==="cancelled"?"cancelled":""}" data-event="${esc(e.id)}" style="--ec:${esc(e.color)};top:${top}px;height:${height}px"><div class="event-head"><span class="event-badge"><i class="dot"></i>${esc(types[e.eventType]||"กิจกรรม")}</span><span class="event-time">${esc(e.startTime)} – ${esc(e.endTime)} น.</span></div><div class="event-title">${esc(e.title)}</div><div class="event-meta">⌖ ${esc(e.courseName||e.location||"ไม่ระบุห้องเรียน")}</div>${foot?`<div class="event-foot"><span>👤 ${esc(e.teacherName)}</span><span><button class="event-icon" data-google="${esc(e.id)}">↗</button> <button class="event-icon" data-delete="${esc(e.id)}">⌫</button></span></div>`:""}</article>`}
 
-  function monthRange() {
-    return {
-      start: dateKey(new Date(viewDate.getFullYear(), viewDate.getMonth(), 1)),
-      end: dateKey(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0))
-    };
+  function render(){
+    document.documentElement.style.setProperty("--hh",`${hourHeight}px`);const dates=visible(),today=key(new Date()),cols=`64px repeat(${viewDays},minmax(${viewDays===7?150:220}px,1fr))`,first=dates[0],last=dates.at(-1);
+    document.getElementById("date-range").textContent=viewDays===1?`${first.getDate()} ${months[first.getMonth()]} ${first.getFullYear()+543}`:`${first.getDate()} ${months[first.getMonth()]} – ${last.getDate()} ${months[last.getMonth()]} ${last.getFullYear()+543}`;
+    document.querySelectorAll("[data-days]").forEach(b=>b.classList.toggle("active",Number(b.dataset.days)===viewDays));
+    const head=document.getElementById("tt-head");head.style.gridTemplateColumns=cols;head.innerHTML='<div class="time-head">เวลา</div>'+dates.map(d=>{const k=key(d),count=events.filter(e=>e.eventDate===k).length;return `<div class="day-head ${k===today?"today":""}"><span>${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}</span><span class="day-count">${count} คาบเรียน</span></div>`}).join("");
+    const body=document.getElementById("tt-body");body.style.gridTemplateColumns=cols;const rows=Array.from({length:END-START},(_,i)=>`<div class="time-row">${pad(START+i)}:00</div>`).join("");
+    body.innerHTML=`<div class="time-axis">${rows}</div>`+dates.map(d=>{const k=key(d),list=events.filter(e=>e.eventDate===k),slots=Array.from({length:(END-START)*2},(_,i)=>`<div class="slot" data-date="${k}" data-minutes="${START*60+i*30}" style="top:${i*hourHeight/2}px"></div>`).join("");return `<div class="day-col ${k===today?"today":""}">${slots}${list.length?list.map(card).join(""):'<span class="empty">คลิกเพื่อเพิ่มคาบเรียน</span>'}</div>`}).join("");
+    document.getElementById("tt-inner").style.minWidth=viewDays===7?"1260px":viewDays===3?"860px":"620px";
   }
+  async function load(){const d=visible(),p=new URLSearchParams({start:key(d[0]),end:key(d.at(-1))});if(teacherFilter)p.set("teacherId",teacherFilter);if(courseFilter.value)p.set("courseId",courseFilter.value);try{const data=await api(`calendar-api?${p}`);events=data.events||[];teachers=data.teachers||[];courses=data.courses||[];isTeacher=!!data.isTeacher;controls();render()}catch(e){document.getElementById("tt-body").innerHTML=`<div style="padding:60px;color:#ff7da5">${esc(e.message)}</div>`}}
 
-  function showNotice(message, failed = false) {
-    const box = document.getElementById("calendar-notice");
-    box.textContent = message;
-    box.className = "mb-5 px-5 py-4 rounded-xl border text-[13px] font-bold " + (failed ? "border-red-200 bg-red-50 text-red-700" : "border-green-200 bg-green-50 text-green-700");
-    clearTimeout(showNotice.timer);
-    showNotice.timer = setTimeout(() => box.classList.add("hidden"), 3500);
-  }
-
-  function populateFilters() {
-    if (teacherFilter) {
-      const current = teacherFilter.value;
-      teacherFilter.innerHTML = '<option value="">ครูทุกคน</option>' + teachers.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("");
-      teacherFilter.value = current;
-    }
-    const currentCourse = courseFilter.value;
-    courseFilter.innerHTML = '<option value="">ทุกคอร์ส</option>' + courses.map(item => `<option value="${esc(item.id)}">${esc(item.title)}</option>`).join("");
-    courseFilter.value = currentCourse;
-    teacherField.innerHTML = teachers.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("");
-    teacherField.disabled = isTeacher;
-    filterModalCourses();
-  }
-
-  function filterModalCourses(selected = "") {
-    const teacherId = teacherField.value;
-    const available = courses.filter(course => !course.teacherId || !teacherId || course.teacherId === teacherId);
-    courseField.innerHTML = '<option value="">ไม่ผูกกับคอร์ส</option>' + available.map(item => `<option value="${esc(item.id)}">${esc(item.title)}</option>`).join("");
-    courseField.value = selected;
-  }
-
-  function renderStats() {
-    const today = dateKey(new Date());
-    const active = events.filter(event => event.status !== "cancelled");
-    const hours = active.reduce((total, event) => {
-      const [sh, sm] = event.startTime.split(":").map(Number);
-      const [eh, em] = event.endTime.split(":").map(Number);
-      return total + Math.max(0, (eh * 60 + em - sh * 60 - sm) / 60);
-    }, 0);
-    document.getElementById("calendar-month-count").textContent = events.length;
-    document.getElementById("calendar-today-count").textContent = events.filter(event => event.eventDate === today).length;
-    document.getElementById("calendar-hours").textContent = new Intl.NumberFormat("th-TH", {maximumFractionDigits: 1}).format(hours);
-  }
-
-  function render() {
-    document.getElementById("calendar-heading").textContent = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear() + 543}`;
-    const first = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-    const cursor = new Date(first);
-    cursor.setDate(cursor.getDate() - cursor.getDay());
-    const today = dateKey(new Date());
-    let html = "";
-    for (let index = 0; index < 42; index += 1) {
-      const key = dateKey(cursor);
-      const outside = cursor.getMonth() !== viewDate.getMonth();
-      const dayEvents = events.filter(event => event.eventDate === key);
-      html += `<div class="calendar-day p-2 ${outside ? "outside" : ""}" data-date="${key}">
-        <button type="button" data-add-date="${key}" class="w-7 h-7 rounded-full text-[12px] font-bold ${key === today ? "bg-pink-500 text-white" : "hover:bg-[#edf2f7]"}" aria-label="เพิ่มกิจกรรมวันที่ ${cursor.getDate()}">${cursor.getDate()}</button>
-        <div class="mt-1 space-y-1">${dayEvents.slice(0, 4).map(event => `<button type="button" data-event-id="${esc(event.id)}" title="${esc(event.title)}" class="w-full rounded-md px-2 py-1 text-left text-white text-[11px] leading-tight overflow-hidden ${event.status === "cancelled" ? "opacity-45 line-through" : ""}" style="background:${esc(event.color)}">
-          <b>${esc(event.startTime)}</b> <span class="event-detail">${esc(event.title)}</span>
-        </button>`).join("")}${dayEvents.length > 4 ? `<div class="text-[10px] font-bold text-[#65738a] px-1">+ อีก ${dayEvents.length - 4} รายการ</div>` : ""}</div>
-      </div>`;
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    grid.innerHTML = html;
-    renderStats();
-  }
-
-  async function load() {
-    const range = monthRange();
-    const params = new URLSearchParams(range);
-    if (teacherFilter?.value) params.set("teacherId", teacherFilter.value);
-    if (courseFilter.value) params.set("courseId", courseFilter.value);
-    grid.innerHTML = '<div class="col-span-7 p-16 text-center text-[#65738a]">กำลังโหลดปฏิทิน...</div>';
-    try {
-      const data = await request(`calendar-api?${params}`);
-      events = data.events || [];
-      teachers = data.teachers || [];
-      courses = data.courses || [];
-      isTeacher = Boolean(data.isTeacher);
-      populateFilters();
-      render();
-    } catch (error) {
-      grid.innerHTML = `<div class="col-span-7 p-16 text-center text-red-600">${esc(error.message)}</div>`;
-    }
-  }
-
-  function openModal(item = null, date = "") {
-    form.reset();
-    errorBox.classList.add("hidden");
-    form.elements.id.value = item?.id || "";
-    form.elements.title.value = item?.title || "";
-    form.elements.eventType.value = item?.eventType || "lesson";
-    form.elements.status.value = item?.status || "scheduled";
-    form.elements.eventDate.value = item?.eventDate || date || dateKey(new Date());
-    form.elements.startTime.value = item?.startTime || "09:00";
-    form.elements.endTime.value = item?.endTime || "10:30";
-    teacherField.value = item?.teacherId || teachers[0]?.id || "";
-    filterModalCourses(item?.courseId || "");
-    form.elements.location.value = item?.location || "";
-    form.elements.color.value = item?.color || "#2563eb";
-    form.elements.notes.value = item?.notes || "";
-    document.getElementById("calendar-modal-title").textContent = item ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรม";
-    deleteButton.classList.toggle("hidden", !item);
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-    setTimeout(() => form.elements.title.focus(), 0);
-  }
-
-  function closeModal() {
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  }
-
-  document.getElementById("calendar-prev").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() - 1); load(); });
-  document.getElementById("calendar-next").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() + 1); load(); });
-  document.getElementById("calendar-today").addEventListener("click", () => { const now = new Date(); viewDate = new Date(now.getFullYear(), now.getMonth(), 1); load(); });
-  document.getElementById("add-calendar-event").addEventListener("click", () => openModal());
-  [teacherFilter, courseFilter].filter(Boolean).forEach(field => field.addEventListener("change", load));
-  teacherField.addEventListener("change", () => filterModalCourses());
-  document.querySelectorAll("[data-calendar-close]").forEach(button => button.addEventListener("click", closeModal));
-  modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
-  grid.addEventListener("click", event => {
-    const eventButton = event.target.closest("[data-event-id]");
-    if (eventButton) return openModal(events.find(item => item.id === eventButton.dataset.eventId));
-    const dateButton = event.target.closest("[data-add-date]");
-    if (dateButton) openModal(null, dateButton.dataset.addDate);
-  });
-
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
-    const button = document.getElementById("save-calendar-event");
-    const body = Object.fromEntries(new FormData(form));
-    button.disabled = true;
-    button.textContent = "กำลังบันทึก...";
-    errorBox.classList.add("hidden");
-    try {
-      await request("calendar-api", {method: body.id ? "PATCH" : "POST", body: JSON.stringify(body)});
-      closeModal();
-      showNotice(body.id ? "แก้ไขกิจกรรมเรียบร้อยแล้ว" : "เพิ่มกิจกรรมลงปฏิทินแล้ว");
-      await load();
-    } catch (error) {
-      errorBox.textContent = error.message;
-      errorBox.classList.remove("hidden");
-    } finally {
-      button.disabled = false;
-      button.textContent = "บันทึกกิจกรรม";
-    }
-  });
-
-  deleteButton.addEventListener("click", async () => {
-    const id = form.elements.id.value;
-    if (!id || !confirm("ยืนยันการลบกิจกรรมนี้ออกจากปฏิทิน?")) return;
-    deleteButton.disabled = true;
-    try {
-      await request(`calendar-api?id=${encodeURIComponent(id)}`, {method: "DELETE"});
-      closeModal();
-      showNotice("ลบกิจกรรมเรียบร้อยแล้ว");
-      await load();
-    } catch (error) {
-      errorBox.textContent = error.message;
-      errorBox.classList.remove("hidden");
-    } finally {
-      deleteButton.disabled = false;
-    }
-  });
-
-  load();
+  function open(item=null,date="",slot=null){form.reset();errorBox.className="form-error";form.elements.id.value=item?.id||"";form.elements.title.value=item?.title||"";form.elements.eventType.value=item?.eventType||"lesson";form.elements.status.value=item?.status||"scheduled";form.elements.eventDate.value=item?.eventDate||date||key(new Date());const sm=slot===null?540:Number(slot),em=Math.min(sm+90,END*60);form.elements.startTime.value=item?.startTime||`${pad(Math.floor(sm/60))}:${pad(sm%60)}`;form.elements.endTime.value=item?.endTime||`${pad(Math.floor(em/60))}:${pad(em%60)}`;teacherField.value=item?.teacherId||teacherFilter||teachers[0]?.id||"";filterCourses(item?.courseId||"");form.elements.location.value=item?.location||"";form.elements.color.value=item?.color||"#e72d82";form.elements.notes.value=item?.notes||"";document.getElementById("modal-title").textContent=item?"แก้ไขกิจกรรม":"เพิ่มคาบเรียน";deleteBtn.classList.toggle("show",!!item);modal.classList.add("open");setTimeout(()=>form.elements.title.focus(),0)}
+  const close=()=>modal.classList.remove("open");
+  document.getElementById("cal-prev").onclick=()=>{anchor=add(anchor,-viewDays);load()};document.getElementById("cal-next").onclick=()=>{anchor=add(anchor,viewDays);load()};document.getElementById("cal-today").onclick=()=>{const n=new Date();anchor=new Date(n.getFullYear(),n.getMonth(),n.getDate());load()};document.getElementById("add-calendar-event").onclick=()=>open();
+  document.querySelectorAll("[data-days]").forEach(b=>b.onclick=()=>{viewDays=Number(b.dataset.days);load()});document.getElementById("zoom-out").onclick=()=>{hourHeight=Math.max(48,hourHeight-12);render()};document.getElementById("zoom-in").onclick=()=>{hourHeight=Math.min(120,hourHeight+12);render()};courseFilter.onchange=load;teacherField.onchange=()=>filterCourses();document.getElementById("teacher-chips").onclick=e=>{const b=e.target.closest("[data-teacher]");if(b){teacherFilter=b.dataset.teacher;load()}};document.querySelectorAll("[data-close]").forEach(b=>b.onclick=close);modal.onclick=e=>{if(e.target===modal)close()};
+  document.getElementById("tt-body").onclick=e=>{const g=e.target.closest("[data-google]");if(g){e.stopPropagation();const item=events.find(x=>x.id===g.dataset.google);if(item)window.open(googleUrl(item),"_blank","noopener");return}const del=e.target.closest("[data-delete]");if(del){e.stopPropagation();remove(del.dataset.delete);return}const event=e.target.closest("[data-event]");if(event){open(events.find(x=>x.id===event.dataset.event));return}const slot=e.target.closest("[data-date]");if(slot)open(null,slot.dataset.date,Number(slot.dataset.minutes))};
+  form.onsubmit=async e=>{e.preventDefault();const btn=document.getElementById("save-event"),body=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent="กำลังบันทึก...";errorBox.className="form-error";try{await api("calendar-api",{method:body.id?"PATCH":"POST",body:JSON.stringify(body)});close();notice(body.id?"แก้ไขกิจกรรมเรียบร้อยแล้ว":"เพิ่มคาบเรียนเรียบร้อยแล้ว");await load()}catch(err){errorBox.textContent=err.message;errorBox.className="form-error show"}finally{btn.disabled=false;btn.textContent="บันทึกกิจกรรม"}};
+  async function remove(id){if(!id||!confirm("ยืนยันการลบกิจกรรมนี้ออกจากตาราง?"))return;try{await api(`calendar-api?id=${encodeURIComponent(id)}`,{method:"DELETE"});close();notice("ลบกิจกรรมเรียบร้อยแล้ว");await load()}catch(e){notice(e.message,true)}}deleteBtn.onclick=()=>remove(form.elements.id.value);load();
 })();
