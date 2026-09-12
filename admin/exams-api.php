@@ -56,8 +56,6 @@ function ensureExamSchema(PDO $pdo): void
     $questionColumns = tableColumns($pdo, 'exam_questions');
     $questionAdditions = [
         'passage' => "ADD COLUMN `passage` MEDIUMTEXT NULL AFTER `question_text`",
-        'image_url' => "ADD COLUMN `image_url` VARCHAR(1000) NULL AFTER `passage`",
-        'image_prompt' => "ADD COLUMN `image_prompt` TEXT NULL AFTER `image_url`",
         'difficulty' => "ADD COLUMN `difficulty` VARCHAR(50) NULL AFTER `skill`",
         'created_at' => "ADD COLUMN `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `difficulty`",
     ];
@@ -82,7 +80,7 @@ try {
             }
             $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
             $stmt = $pdo->prepare(
-                "SELECT q.id, q.exam_id, q.sort_order, q.question_text, q.image_url, q.image_prompt, q.options,
+                "SELECT q.id, q.exam_id, q.sort_order, q.question_text, q.options,
                         q.correct_answer, q.explanation, q.skill, q.difficulty,
                         e.title AS exam_title, e.subject, e.grade, e.type,
                         e.is_ai_generated, e.status
@@ -99,8 +97,6 @@ try {
                     'examId' => (string) $row['exam_id'],
                     'sortOrder' => (int) $row['sort_order'],
                     'questionText' => $row['question_text'],
-                    'imageUrl' => $row['image_url'],
-                    'imagePrompt' => $row['image_prompt'],
                     'options' => is_array($options) ? $options : [],
                     'correctAnswer' => (int) $row['correct_answer'],
                     'explanation' => $row['explanation'],
@@ -187,9 +183,9 @@ try {
 
         $questionStmt = $pdo->prepare(
             "INSERT INTO exam_questions
-                (exam_id, sort_order, question_text, passage, image_url, image_prompt, options, correct_answer, explanation, skill, difficulty)
+                (exam_id, sort_order, question_text, passage, options, correct_answer, explanation, skill, difficulty)
              VALUES
-                (:exam_id, :sort_order, :question_text, :passage, :image_url, :image_prompt, :options, :correct_answer, :explanation, :skill, :difficulty)"
+                (:exam_id, :sort_order, :question_text, :passage, :options, :correct_answer, :explanation, :skill, :difficulty)"
         );
         foreach ($questions as $index => $question) {
             if (!is_array($question) || !isset($question['options']) || !is_array($question['options'])) {
@@ -205,8 +201,6 @@ try {
                 ':sort_order' => $index + 1,
                 ':question_text' => $questionText,
                 ':passage' => $question['passage'] ?? null,
-                ':image_url' => preg_match('#^/uploads/ai-images/[0-9]{4}/[0-9]{2}/[a-f0-9]{32}\.(png|jpg|webp)$#', (string) ($question['imageUrl'] ?? '')) ? $question['imageUrl'] : null,
-                ':image_prompt' => mb_substr(trim((string) ($question['imagePrompt'] ?? '')), 0, 4000) ?: null,
                 ':options' => json_encode(array_values($question['options']), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 ':correct_answer' => $correctAnswer,
                 ':explanation' => $question['explanation'] ?? null,

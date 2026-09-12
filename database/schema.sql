@@ -31,18 +31,6 @@ CREATE TABLE IF NOT EXISTS `parent_info` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
-    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `user_id` INT NOT NULL,
-    `token_hash` CHAR(64) NOT NULL UNIQUE,
-    `requested_ip` VARCHAR(45),
-    `expires_at` DATETIME NOT NULL,
-    `used_at` DATETIME,
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX `idx_password_reset_user` (`user_id`, `created_at`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- 2. Courses
 CREATE TABLE IF NOT EXISTS `courses` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -139,8 +127,6 @@ CREATE TABLE IF NOT EXISTS `exam_questions` (
     `sort_order` INT DEFAULT 0,
     `question_text` TEXT NOT NULL,
     `passage` TEXT,
-    `image_url` VARCHAR(1000),
-    `image_prompt` TEXT,
     `options` JSON NOT NULL,
     `correct_answer` INT NOT NULL,
     `explanation` TEXT,

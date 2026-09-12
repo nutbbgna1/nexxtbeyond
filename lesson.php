@@ -232,3 +232,45 @@ include 'includes/header.php';
 </main>
 
 <?php include 'includes/footer.php'; ?>
+<script>
+  // Simulated lesson & course IDs for the mockup page
+  const lessonId = <?= (int)($_GET['id'] ?? 1) ?>;
+  const courseId = <?= (int)($_GET['course_id'] ?? 1) ?>;
+
+  if (lessonId && courseId) {
+    const apiPath = 'student/lesson-progress-api.php';
+    
+    // Start tracking
+    fetch(apiPath, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'start', lesson_id: lessonId, course_id: courseId })
+    }).catch(console.error);
+
+    // Heartbeat every 30 seconds
+    setInterval(() => {
+      fetch(apiPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'heartbeat', lesson_id: lessonId, course_id: courseId })
+      }).catch(console.error);
+    }, 30000);
+
+    // Bind "ทำกิจกรรมท้ายบท" button as completion trigger
+    const completeBtn = document.querySelector('button.bg-\\[\\#2369dd\\]');
+    if (completeBtn) {
+      completeBtn.addEventListener('click', () => {
+        fetch(apiPath, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'complete', lesson_id: lessonId, course_id: courseId })
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                alert('บันทึกความสำเร็จแล้ว! ความคืบหน้าจะถูกอัปเดตใน Roadmap (ถ้ามีภารกิจที่เกี่ยวข้อง)');
+                // Go to next lesson or test...
+            }
+        }).catch(console.error);
+      });
+    }
+  }
+</script>

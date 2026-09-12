@@ -78,6 +78,10 @@ $stmtUpdate->execute([
 
 $pdo->commit();
 
+// Trigger roadmap evaluation
+require_once __DIR__ . '/../includes/roadmap-evaluator.php';
+evaluateTestTask($pdo, (int)$currentUser['id'], $examId, $attemptId);
+
 // redirect ไปดูผล
 header('Location: test-result.php?id=' . $attemptId);
 exit;

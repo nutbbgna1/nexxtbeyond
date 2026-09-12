@@ -8,7 +8,6 @@ $adminMenu = [
     ["courses.php", "คอร์สเรียน"],
     ["curriculum.php", "บทเรียนในคอร์ส"],
     ["roadmap.php", "Study Roadmap"],
-    ["../science-studio/", "Science Learning Studio"],
     ["teachers.php", "ครูผู้สอน"],
     ["calendar.php", "ปฏิทินและตารางสอน"]
   ],
@@ -27,7 +26,7 @@ $adminMenu = [
 ];
 $currentPage = $currentPage ?? 'index.php';
 foreach ($adminMenu as $group => $items) {
-  $adminMenu[$group] = array_values(array_filter($items, fn($item) => consoleAllowed($item[0] === '../science-studio/' ? 'ai-exam.php' : $item[0])));
+  $adminMenu[$group] = array_values(array_filter($items, fn($item) => consoleAllowed($item[0])));
   if (!$adminMenu[$group]) unset($adminMenu[$group]);
 }
 ?>

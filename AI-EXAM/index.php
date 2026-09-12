@@ -47,8 +47,8 @@ try {
         <div class="relative mb-6">
             <div class="animate-spin rounded-full h-16 w-16 border-4 border-pink-100 border-t-pink-500"></div>
         </div>
-        <h3 class="text-xl font-bold text-navy-950 mb-2" id="generation-title">กำลังให้ AI สร้างข้อสอบ...</h3>
-        <p class="text-pink-500 font-medium mb-1" id="generation-detail">กำลังรวบรวมข้อสอบคุณภาพสูงตามระดับความยาก</p>
+        <h3 class="text-xl font-bold text-navy-950 mb-2">กำลังให้ AI สร้างข้อสอบ...</h3>
+        <p class="text-pink-500 font-medium mb-1">กำลังรวบรวมข้อสอบคุณภาพสูงตามระดับความยาก</p>
         <p class="text-xs text-[#65738a]">อาจใช้เวลา 10-40 วินาที ขึ้นอยู่กับจำนวนข้อที่กำหนด</p>
     </div>
 
@@ -101,11 +101,6 @@ try {
         <label class="flex items-center space-x-3 cursor-pointer p-4 bg-[#f8fafc] rounded-xl border border-[#e8ecf2] hover:border-pink-300 transition-colors">
             <input type="checkbox" id="shuffle" class="w-5 h-5 text-pink-500 border-gray-300 rounded focus:ring-pink-500 focus:ring-offset-0" />
             <span class="text-navy-950 font-bold text-[14px]">สลับข้อสอบ (Shuffle) <span class="text-[12px] font-medium text-[#65738a] ml-1 block sm:inline">สุ่มลำดับข้อหลังจากสร้างเสร็จ</span></span>
-        </label>
-
-        <label class="flex items-center space-x-3 cursor-pointer p-4 bg-[#f8fafc] rounded-xl border border-[#e8ecf2] hover:border-pink-300 transition-colors">
-            <input type="checkbox" id="generateImages" checked class="w-5 h-5 text-pink-500 border-gray-300 rounded focus:ring-pink-500 focus:ring-offset-0" />
-            <span class="text-navy-950 font-bold text-[14px]">สร้างภาพประกอบด้วย Nano Banana <span class="text-[12px] font-medium text-[#65738a] ml-1 block sm:inline">สร้างเฉพาะข้อที่ AI เห็นว่าภาพช่วยให้เข้าใจโจทย์</span></span>
         </label>
 
         <!-- Details -->

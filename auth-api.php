@@ -43,22 +43,6 @@ function ensureAuthSchema(PDO $pdo): void
             $pdo->exec("ALTER TABLE `users` {$definition}");
         }
     }
-    $pdo->exec("CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
-        `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        `user_id` INT NOT NULL,
-        `token_hash` CHAR(64) NOT NULL UNIQUE,
-        `requested_ip` VARCHAR(45) NULL,
-        `expires_at` DATETIME NOT NULL,
-        `used_at` DATETIME NULL,
-        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        INDEX `idx_password_reset_user` (`user_id`, `created_at`),
-        CONSTRAINT `fk_password_reset_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-}
-
-function isLocalRequest(): bool
-{
-    return in_array((string) ($_SERVER['REMOTE_ADDR'] ?? ''), ['127.0.0.1', '::1'], true);
 }
 
 try {
@@ -93,77 +77,6 @@ try {
     $data = authBody();
     $action = (string) ($data['action'] ?? '');
 
-    if ($action === 'forgotPassword') {
-        $email = strtolower(trim((string) ($data['email'] ?? '')));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            authRespond(['error' => 'กรุณากรอกอีเมลให้ถูกต้อง'], 422);
-        }
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND is_active = 1 LIMIT 1');
-        $stmt->execute([':email' => $email]);
-        $userId = (int) ($stmt->fetchColumn() ?: 0);
-
-        if ($userId <= 0 && $email === 'admin@nextbeyond.net') {
-            $adminStmt = $pdo->prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1 ORDER BY id LIMIT 1");
-            $adminStmt->execute();
-            $userId = (int) ($adminStmt->fetchColumn() ?: 0);
-
-            if ($userId <= 0) {
-                $createAdmin = $pdo->prepare("INSERT INTO users (email, password_hash, first_name, last_name, role, is_active) VALUES (:email, :password_hash, 'Next', 'Admin', 'admin', 1)");
-                $createAdmin->execute([
-                    ':email' => $email,
-                    ':password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
-                ]);
-                $userId = (int) $pdo->lastInsertId();
-            }
-        }
-
-        if ($userId <= 0) {
-            password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
-            authRespond(['error' => 'ไม่พบบัญชีที่ใช้อีเมลนี้'], 404);
-        }
-
-        $token = bin2hex(random_bytes(32));
-        $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => $userId]);
-        $insert = $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, requested_ip, expires_at) VALUES (:user_id, :token_hash, :requested_ip, DATE_ADD(NOW(), INTERVAL 30 MINUTE))');
-        $insert->execute([
-            ':user_id' => $userId,
-            ':token_hash' => hash('sha256', $token),
-            ':requested_ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45) ?: null,
-        ]);
-        authRespond([
-            'success' => true,
-            'message' => 'ตั้งรหัสผ่านใหม่ได้เลย',
-            'resetToken' => $token,
-        ]);
-    }
-
-    if ($action === 'resetPassword') {
-        $token = trim((string) ($data['token'] ?? ''));
-        $password = (string) ($data['password'] ?? '');
-        $confirmPassword = (string) ($data['confirmPassword'] ?? '');
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
-            authRespond(['error' => 'ลิงก์ตั้งรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'], 422);
-        }
-        if ($password !== $confirmPassword || strlen($password) < 8) {
-            authRespond(['error' => 'รหัสผ่านต้องตรงกันและมีอย่างน้อย 8 ตัวอักษร'], 422);
-        }
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare('SELECT id, user_id FROM password_reset_tokens WHERE token_hash = :token_hash AND used_at IS NULL AND expires_at > NOW() LIMIT 1 FOR UPDATE');
-        $stmt->execute([':token_hash' => hash('sha256', $token)]);
-        $reset = $stmt->fetch();
-        if (!$reset) {
-            $pdo->rollBack();
-            authRespond(['error' => 'ลิงก์ตั้งรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว'], 422);
-        }
-        $pdo->prepare('UPDATE users SET password_hash = :password_hash WHERE id = :user_id AND is_active = 1')->execute([
-            ':password_hash' => password_hash($password, PASSWORD_DEFAULT),
-            ':user_id' => (int) $reset['user_id'],
-        ]);
-        $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = :user_id AND used_at IS NULL')->execute([':user_id' => (int) $reset['user_id']]);
-        $pdo->commit();
-        authRespond(['success' => true, 'message' => 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว']);
-    }
-
     if ($action === 'login') {
         $identity = trim((string) ($data['identity'] ?? ''));
         $password = (string) ($data['password'] ?? '');
@@ -175,16 +88,12 @@ try {
             $stmt->execute();
         } else {
             $normalizedIdentity = strtolower($identity);
-            if ($normalizedIdentity === 'admin@nextbeyond.net') {
-                $stmt = $pdo->prepare("SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE (email = :identity OR role = 'admin') AND is_active = 1 ORDER BY email = :identity_order DESC, role = 'admin' DESC, id LIMIT 1");
-            } elseif (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
+            if (filter_var($normalizedIdentity, FILTER_VALIDATE_EMAIL)) {
                 $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = :identity LIMIT 1');
             } else {
                 $stmt = $pdo->prepare('SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE phone = :identity LIMIT 1');
             }
-            $stmt->execute($normalizedIdentity === 'admin@nextbeyond.net'
-                ? [':identity' => $normalizedIdentity, ':identity_order' => $normalizedIdentity]
-                : [':identity' => $normalizedIdentity]);
+            $stmt->execute([':identity' => $normalizedIdentity]);
         }
         $user = $stmt->fetch();
         if (!$user || !$user['is_active'] || !password_verify($password, (string) $user['password_hash'])) {

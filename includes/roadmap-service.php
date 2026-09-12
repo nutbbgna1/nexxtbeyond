@@ -6,72 +6,43 @@ function ensureRoadmapSchema(PDO $pdo): void
     static $ready = false;
     if ($ready) return;
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS roadmap_tasks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        stage ENUM('m1','m4','tcas') NOT NULL DEFAULT 'tcas',
-        title VARCHAR(255) NOT NULL,
-        subject VARCHAR(100) NOT NULL DEFAULT 'ทั่วไป',
-        category VARCHAR(100) NOT NULL DEFAULT 'ทั่วไป',
-        due_date DATE NULL,
-        points_reward INT NOT NULL DEFAULT 10,
-        sort_order INT NOT NULL DEFAULT 0,
-        is_active TINYINT(1) NOT NULL DEFAULT 1,
-        created_by INT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_roadmap_stage_active (stage, is_active, sort_order),
-        CONSTRAINT fk_roadmap_creator FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS roadmap_task_progress (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        task_id INT NOT NULL,
-        user_id INT NOT NULL,
-        is_completed TINYINT(1) NOT NULL DEFAULT 0,
-        completed_at DATETIME NULL,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY uq_roadmap_task_user (task_id, user_id),
-        INDEX idx_roadmap_progress_user (user_id, is_completed),
-        CONSTRAINT fk_roadmap_progress_task FOREIGN KEY (task_id) REFERENCES roadmap_tasks(id) ON DELETE CASCADE,
-        CONSTRAINT fk_roadmap_progress_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
+    // Check if the new 'roadmaps' table exists
+    $stmt = $pdo->query("SHOW TABLES LIKE 'roadmaps'");
+    if ($stmt->rowCount() === 0) {
+        // Run migration script
+        $sql = file_get_contents(__DIR__ . '/../database/roadmap_v2_migration.sql');
+        if ($sql !== false) {
+            $pdo->exec($sql);
+        }
+    } else {
+        // Fallback simple checks for tables if needed, but migration covers it.
+    }
+    
     seedRoadmapTemplates($pdo);
     $ready = true;
 }
 
 function seedRoadmapTemplates(PDO $pdo): void
 {
-    $seedKey = 'roadmap_templates_seeded_v1';
+    $seedKey = 'roadmap_templates_seeded_v2';
     try {
         $stmt = $pdo->prepare('SELECT setting_value FROM system_settings WHERE setting_key = ? LIMIT 1');
         $stmt->execute([$seedKey]);
         if ($stmt->fetchColumn() !== false) return;
     } catch (PDOException $error) {
         if ($error->getCode() !== '42S02') throw $error;
-        if ((int)$pdo->query('SELECT COUNT(*) FROM roadmap_tasks')->fetchColumn() > 0) return;
     }
 
-    $templates = [
-        ['tcas','สรุปสูตรฟิสิกส์ ม.ปลาย เรื่องกลศาสตร์และคลื่นแม่เหล็กไฟฟ้า','ฟิสิกส์','สรุปเนื้อหา',3,15],
-        ['tcas','ฝึกทำโจทย์ Mock Exam TPAT1 พาร์ทเชาวน์ปัญญา','TPAT1','ทำข้อสอบ',5,20],
-        ['tcas','ทบทวนคำศัพท์ TGAT1 English Vocabulary 500 คำแรก','TGAT1','ภาษาอังกฤษ',7,10],
-        ['tcas','จำลองสอบจับเวลา A-Level เคมี พันธะเคมีและสมดุลกรด-เบส','เคมี','ทำข้อสอบ',10,25],
-        ['tcas','ฝึกเขียน Essay ภาษาอังกฤษ 250 คำเพื่อเตรียมยื่น Portfolio','ภาษาอังกฤษ','Portfolio',14,20],
-        ['m4','สรุปฟังก์ชันกำลังสองและเรขาคณิตวิเคราะห์ ม.4 เทอม 1','คณิตศาสตร์','สรุปเนื้อหา',2,15],
-        ['m4','ทดสอบความรู้โครงสร้างเซลล์และกล้องจุลทรรศน์','ชีววิทยา','ทำข้อสอบ',6,15],
-        ['m4','ทำแบบฝึกหัดกฎการเคลื่อนที่ของนิวตัน 20 ข้อ','ฟิสิกส์','แบบฝึกหัด',9,20],
-        ['m1','ทบทวนสมการเชิงเส้นตัวแปรเดียวและโจทย์ปัญหาร้อยละ','คณิตศาสตร์','สรุปเนื้อหา',1,10],
-        ['m1','ฝึกอ่าน Short Passages & Reading Comprehension','ภาษาอังกฤษ','ภาษาอังกฤษ',4,15],
-        ['m1','จำลองข้อสอบวิทยาศาสตร์เรื่องสารบริสุทธิ์และสารผสม','วิทยาศาสตร์','ทำข้อสอบ',8,20],
-    ];
-    if ((int)$pdo->query('SELECT COUNT(*) FROM roadmap_tasks')->fetchColumn() === 0) {
-        $insert = $pdo->prepare('INSERT INTO roadmap_tasks (stage,title,subject,category,due_date,points_reward,sort_order,is_active) VALUES (?,?,?,?,?,?,?,1)');
-        foreach ($templates as $index => $template) {
-            [$stage,$title,$subject,$category,$days,$points] = $template;
-            $insert->execute([$stage,$title,$subject,$category,date('Y-m-d', strtotime("+$days days")),$points,$index + 1]);
-        }
+    // Default roadmaps should have been created by migration if there were tasks.
+    // Let's ensure at least one roadmap exists.
+    if ((int)$pdo->query('SELECT COUNT(*) FROM roadmaps')->fetchColumn() === 0) {
+        $pdo->exec("INSERT INTO roadmaps (title, description, stage, status, assignment_mode) VALUES 
+            ('Roadmap ม.6 / TCAS', 'เตรียมสอบเข้ามหาวิทยาลัย', 'tcas', 'published', 'self_select'),
+            ('Roadmap ม.4 - ม.5', 'เนื้อหามัธยมปลาย', 'm4', 'published', 'self_select'),
+            ('Roadmap ม.1 - ม.3', 'พื้นฐานมัธยมต้น', 'm1', 'published', 'self_select')
+        ");
     }
+
     try {
         $stmt = $pdo->prepare("INSERT INTO system_settings (setting_key, setting_value) VALUES (?, '1') ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
         $stmt->execute([$seedKey]);
@@ -94,24 +65,84 @@ function validRoadmapStage(string $stage): string
     return array_key_exists($stage, roadmapStageLabels()) ? $stage : 'tcas';
 }
 
-function getStudentRoadmap(PDO $pdo, int $userId, string $stage): array
+function getStudentRoadmaps(PDO $pdo, int $userId): array
 {
     ensureRoadmapSchema($pdo);
-    $stage = validRoadmapStage($stage);
-    $stmt = $pdo->prepare(
-        'SELECT t.*, COALESCE(p.is_completed, 0) AS is_completed, p.completed_at
-         FROM roadmap_tasks t
-         LEFT JOIN roadmap_task_progress p ON p.task_id = t.id AND p.user_id = :user_id
-         WHERE t.stage = :stage AND t.is_active = 1
-         ORDER BY t.sort_order, t.due_date IS NULL, t.due_date, t.id'
-    );
-    $stmt->execute([':user_id' => $userId, ':stage' => $stage]);
+    // Get all published roadmaps the user is enrolled in, or all self_select published roadmaps
+    $stmt = $pdo->prepare("
+        SELECT r.*, 
+               COALESCE(e.status, 'not_enrolled') AS enroll_status,
+               e.progress_percent,
+               e.is_mandatory
+        FROM roadmaps r
+        LEFT JOIN roadmap_enrollments e ON e.roadmap_id = r.id AND e.user_id = :user_id
+        WHERE r.status = 'published'
+        ORDER BY r.stage DESC, r.id ASC
+    ");
+    $stmt->execute([':user_id' => $userId]);
     return $stmt->fetchAll();
+}
+
+function getStudentRoadmap(PDO $pdo, int $userId, int $roadmapId): ?array
+{
+    ensureRoadmapSchema($pdo);
+    $stmt = $pdo->prepare("
+        SELECT r.*, 
+               COALESCE(e.status, 'not_enrolled') AS enroll_status,
+               e.progress_percent,
+               e.is_mandatory,
+               e.enrolled_at
+        FROM roadmaps r
+        LEFT JOIN roadmap_enrollments e ON e.roadmap_id = r.id AND e.user_id = :user_id
+        WHERE r.id = :roadmap_id AND r.status = 'published'
+    ");
+    $stmt->execute([':user_id' => $userId, ':roadmap_id' => $roadmapId]);
+    return $stmt->fetch() ?: null;
+}
+
+function getRoadmapTasks(PDO $pdo, int $roadmapId, int $userId): array
+{
+    $stmt = $pdo->prepare("
+        SELECT t.*, 
+               COALESCE(p.status, 'not_started') AS progress_status, 
+               p.completed_at,
+               p.completion_source
+        FROM roadmap_tasks t
+        LEFT JOIN roadmap_task_progress p ON p.task_id = t.id AND p.user_id = :user_id
+        WHERE t.roadmap_id = :roadmap_id AND t.is_active = 1
+        ORDER BY t.sort_order, t.due_date IS NULL, t.due_date, t.id
+    ");
+    $stmt->execute([':user_id' => $userId, ':roadmap_id' => $roadmapId]);
+    $tasks = $stmt->fetchAll();
+    
+    // Evaluate prerequisite locks
+    $completedTaskIds = [];
+    foreach ($tasks as $task) {
+        if ($task['progress_status'] === 'completed' || $task['progress_status'] === 'exempted') {
+            $completedTaskIds[] = (int)$task['id'];
+        }
+    }
+    
+    foreach ($tasks as &$task) {
+        if ($task['progress_status'] !== 'completed' && $task['progress_status'] !== 'exempted') {
+            if (!empty($task['prerequisite_task_id']) && !in_array((int)$task['prerequisite_task_id'], $completedTaskIds)) {
+                $task['progress_status'] = 'locked';
+            }
+        }
+    }
+    
+    return $tasks;
 }
 
 function roadmapProgress(array $tasks): array
 {
-    $total = count($tasks);
-    $completed = count(array_filter($tasks, static fn(array $task): bool => (bool)$task['is_completed']));
+    $requiredTasks = array_filter($tasks, static fn(array $t): bool => (bool)$t['is_required']);
+    $total = count($requiredTasks);
+    $completed = count(array_filter($requiredTasks, static fn(array $task): bool => $task['progress_status'] === 'completed' || $task['progress_status'] === 'exempted'));
     return ['total' => $total, 'completed' => $completed, 'percent' => $total ? (int)round($completed * 100 / $total) : 0];
+}
+
+function canCompleteManually(array $task): bool
+{
+    return $task['completion_type'] === 'manual';
 }
