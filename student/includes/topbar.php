@@ -16,7 +16,7 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
     </a>
 
     <!-- Mobile hamburger -->
-    <button id="sidebarToggle" class="hidden max-[1024px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" aria-label="เปิดเมนู">
+    <button id="sidebarToggle" class="hidden max-[1024px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" type="button" aria-label="เปิดเมนู" aria-controls="studentSidebar" aria-expanded="false">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
@@ -48,10 +48,25 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
 </header>
 
 <script>
-  document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+  (() => {
+    const toggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('studentSidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    sidebar?.classList.toggle('max-[1024px]:-translate-x-full');
-    overlay?.classList.toggle('hidden');
-  });
+
+    const setMenuOpen = (open) => {
+      sidebar?.classList.toggle('max-[1024px]:-translate-x-full', !open);
+      overlay?.classList.toggle('hidden', !open);
+      overlay?.setAttribute('aria-hidden', open ? 'false' : 'true');
+      toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.body.classList.toggle('student-menu-open', open);
+    };
+
+    toggle?.addEventListener('click', () => {
+      setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+    overlay?.addEventListener('click', () => setMenuOpen(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    });
+  })();
 </script>

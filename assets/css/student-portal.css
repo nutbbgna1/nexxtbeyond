@@ -41,11 +41,14 @@
 @media (max-width:768px) {
   html { background:#f3f7fd; }
   body.student-portal { min-width:320px; padding-bottom:calc(76px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,#fff 0,#f8fbff 28%,#f3f7fd 100%) !important; }
+  body.student-portal.student-menu-open { overflow:hidden; }
   .student-portal > .min-h-screen { min-height:calc(100dvh - 76px); }
-  #studentSidebar,#sidebarOverlay { display:none !important; }
+  #studentSidebar { display:flex !important; width:min(84vw,300px) !important; }
+  #sidebarOverlay:not(.hidden) { display:block !important; }
   .student-topbar { position:sticky; top:0; min-height:60px; border-color:rgba(219,228,242,.82) !important; background:rgba(255,255,255,.92) !important; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
   .student-topbar > div { height:60px !important; padding:0 16px !important; gap:10px !important; }
-  .student-topbar #sidebarToggle,.student-topbar h1 { display:none !important; }
+  .student-topbar h1 { display:none !important; }
+  .student-topbar #sidebarToggle { display:flex !important; width:38px !important; height:38px !important; flex:none; border-radius:12px !important; color:#31548b !important; background:#e8eeff !important; }
   .student-mobile-brand { display:flex; align-items:center; gap:8px; color:#061a40; text-decoration:none; }
   .student-mobile-brand svg { width:28px; height:28px; flex:none; }
   .student-mobile-brand span { display:grid; line-height:1.02; }

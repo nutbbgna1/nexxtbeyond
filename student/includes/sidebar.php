@@ -102,4 +102,4 @@ $initials = mb_strtoupper(mb_substr($u['first_name'] ?? 'N', 0, 1) . mb_substr($
 </aside>
 
 <!-- Mobile Overlay -->
-<div id="sidebarOverlay" class="fixed inset-0 bg-navy-950/50 z-30 hidden" onclick="document.getElementById('studentSidebar').classList.add('max-[1024px]:-translate-x-full');this.classList.add('hidden')"></div>
+<div id="sidebarOverlay" class="fixed inset-0 bg-navy-950/50 z-30 hidden" aria-hidden="true"></div>
