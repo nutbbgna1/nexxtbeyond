@@ -29,10 +29,10 @@ include 'includes/header.php';
 
   <!-- ── Workspace: Planner (left) + Output (right) ── -->
   <section class="py-10 pb-20 bg-[#f6f8fc]" id="planner">
-    <div class="container grid grid-cols-[350px_1fr] items-start gap-6 max-[960px]:grid-cols-1" data-learning-path-app>
+    <div class="container grid grid-cols-[350px_1fr] items-start gap-6 max-[1024px]:grid-cols-1" data-learning-path-app>
 
       <!-- Planner Form (Left Panel) -->
-      <form class="sticky top-[98px] p-6 border border-[#dce4ef] rounded-[22px] bg-white shadow-[0_12px_32px_rgba(15,42,83,.08)] max-[960px]:static" data-plan-form>
+      <form class="sticky top-[98px] p-6 border border-[#dce4ef] rounded-[22px] bg-white shadow-[0_12px_32px_rgba(15,42,83,.08)] max-[1024px]:static" data-plan-form>
         <p class="flex items-center gap-2.5 text-[12px] font-black tracking-[0.15em] text-[#2369dd] uppercase mb-2.5">
           <span class="w-[25px] h-[3px] rounded-full bg-pink-500"></span>PLAN SETTINGS
         </p>
@@ -96,7 +96,7 @@ include 'includes/header.php';
         <h2 class="text-navy-950 text-[36px] font-bold tracking-[-0.03em] mb-2">แผนที่ปรับตามผู้เรียนจริง</h2>
         <p class="text-[#65738a]">แต่ละแผนเริ่มจากพื้นฐาน เชื่อมไปสู่เป้าหมาย และจบด้วยการวัดผลอีกครั้ง</p>
       </div>
-      <div class="grid grid-cols-3 gap-4 max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-3 gap-4 max-[1024px]:grid-cols-1">
         <article class="p-[22px] border border-[#dce4ef] rounded-[17px] bg-[#f6f8fc]">
           <span class="w-[39px] h-[39px] mb-3.5 grid place-items-center rounded-xl text-white bg-pink-500 font-black">01</span>
           <h3 class="text-navy-950 font-bold mb-1.5">เริ่มจากระดับปัจจุบัน</h3>

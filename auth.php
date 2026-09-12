@@ -109,7 +109,7 @@ include 'includes/header.php';
         <div class="flex items-center gap-2 shrink-0"><span class="w-8 h-8 rounded-full bg-[#e8ecf2] text-[#94a3b8] text-[13px] font-bold flex items-center justify-center">3</span><span class="text-[13px] text-[#94a3b8]">ตั้งค่าบัญชี</span></div>
       </div>
 
-      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[1024px]:grid-cols-1">
         <!-- Form -->
         <div>
           <!-- Basic Info -->
@@ -151,7 +151,7 @@ include 'includes/header.php';
         </div>
 
         <!-- Sidebar -->
-        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[960px]:order-first">
+        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[1024px]:order-first">
           <h3 class="text-[16px] font-bold text-navy-950 mb-4">ทำไมต้องกรอกข้อมูลเหล่านี้?</h3>
           <div class="space-y-4">
             <div class="flex gap-3"><span class="w-8 h-8 shrink-0 rounded-lg bg-[#e8f1ff] flex items-center justify-center text-[#2369dd]"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><div><p class="text-[13px] font-bold text-navy-950 mb-0.5">แนะนำคอร์สตรงระดับ</p><p class="text-[12px] text-[#65738a] mb-0">ระดับชั้นและเป้าหมายช่วยเลือกเนื้อหาที่เหมาะกับตัวคุณ</p></div></div>
@@ -181,7 +181,7 @@ include 'includes/header.php';
         <div class="flex items-center gap-2 shrink-0"><span class="w-8 h-8 rounded-full bg-[#e8ecf2] text-[#94a3b8] text-[13px] font-bold flex items-center justify-center">3</span><span class="text-[13px] text-[#94a3b8]">ตั้งค่าบัญชี</span></div>
       </div>
 
-      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[1024px]:grid-cols-1">
         <div>
           <!-- Primary Guardian -->
           <div class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] mb-4">
@@ -240,7 +240,7 @@ include 'includes/header.php';
         </div>
 
         <!-- Sidebar (same as step 1) -->
-        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[960px]:order-first">
+        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[1024px]:order-first">
           <h3 class="text-[16px] font-bold text-navy-950 mb-4">ทำไมต้องกรอกข้อมูลผู้ปกครอง?</h3>
           <div class="space-y-4">
             <div class="flex gap-3"><span class="w-8 h-8 shrink-0 rounded-lg bg-[#e8f1ff] flex items-center justify-center text-[#2369dd]"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></span><div><p class="text-[13px] font-bold text-navy-950 mb-0.5">การติดต่อสำคัญ</p><p class="text-[12px] text-[#65738a] mb-0">แจ้งเปลี่ยนตาราง ส่ง Feedback และเรื่องฉุกเฉิน</p></div></div>
@@ -269,7 +269,7 @@ include 'includes/header.php';
         <div class="flex items-center gap-2 shrink-0"><span class="w-8 h-8 rounded-full bg-pink-500 text-white text-[13px] font-bold flex items-center justify-center">3</span><span class="text-[13px] font-bold text-navy-950">ตั้งค่าบัญชี</span></div>
       </div>
 
-      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[1fr_320px] gap-6 items-start max-[1024px]:grid-cols-1">
         <div>
           <!-- Account Owner -->
           <div class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] mb-4">
@@ -316,7 +316,7 @@ include 'includes/header.php';
         </div>
 
         <!-- Sidebar: Review -->
-        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[960px]:order-first">
+        <aside class="border border-[#dce4ef] rounded-[18px] bg-white p-6 shadow-[0_8px_24px_rgba(15,42,83,.06)] max-[1024px]:order-first">
           <h3 class="text-[16px] font-bold text-navy-950 mb-4">สรุปข้อมูลที่บันทึก</h3>
           <div class="space-y-3" data-review-summary>
             <div class="pb-3 border-b border-[#f1f5f9]"><p class="text-[11px] text-[#94a3b8] uppercase tracking-wider mb-0.5">นักเรียน</p><p class="text-[13px] font-bold text-navy-950 mb-0" data-review="studentName">—</p></div>

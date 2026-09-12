@@ -46,7 +46,7 @@ $cssVersion = (string)filemtime(__DIR__ . '/../assets/css/student-exam.css');
 <body class="student-portal bg-[#f4f7fb] text-navy-950 font-sans antialiased">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
+  <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
 <main class="result-wrap">
   <section class="result-hero">

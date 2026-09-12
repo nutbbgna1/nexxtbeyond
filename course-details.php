@@ -24,7 +24,7 @@ include 'includes/header.php';
     <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-500/10 blur-[100px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
     <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 blur-[80px] rounded-full pointer-events-none translate-y-1/2 -translate-x-1/3"></div>
 
-    <div class="container grid grid-cols-[1fr_480px] gap-12 items-center relative z-10 max-[960px]:grid-cols-1 max-[960px]:gap-10">
+    <div class="container grid grid-cols-[1fr_480px] gap-12 items-center relative z-10 max-[1024px]:grid-cols-1 max-[1024px]:gap-10">
       <div>
         <span class="inline-block px-3.5 py-1.5 mb-5 rounded-full bg-[#1b2f4f] text-[#aebbd0] text-[11px] font-black tracking-[0.1em] uppercase border border-white/5">ภาษาอังกฤษ · BEGINNER</span>
         <h1 class="text-[clamp(32px,4vw,44px)] font-black mb-5 leading-[1.15] tracking-tight">English Communication Starter</h1>
@@ -50,7 +50,7 @@ include 'includes/header.php';
 
   <!-- Main Content & Sidebar -->
   <section class="py-[60px] bg-[#f6f8fc]">
-    <div class="container grid grid-cols-[1fr_360px] gap-10 items-start max-[960px]:grid-cols-1">
+    <div class="container grid grid-cols-[1fr_360px] gap-10 items-start max-[1024px]:grid-cols-1">
       
       <!-- Left Column: Content -->
       <div>
@@ -271,7 +271,7 @@ include 'includes/header.php';
         <a href="courses.php" class="text-[14px] font-bold text-[#2369dd] hover:underline">ดูคอร์สทั้งหมด →</a>
       </div>
       
-      <div class="grid grid-cols-3 gap-6 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1">
+      <div class="grid grid-cols-3 gap-6 max-[1024px]:grid-cols-2 max-[640px]:grid-cols-1">
         <!-- Related Card 1 -->
         <article class="bg-white border border-[#e8ecf2] rounded-[16px] overflow-hidden shadow-[0_4px_24px_rgba(15,42,83,0.05)] transition-transform hover:-translate-y-1 hover:shadow-lg flex flex-col group">
           <div class="relative h-[160px] bg-gray-200 overflow-hidden">

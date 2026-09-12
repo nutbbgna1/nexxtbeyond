@@ -21,7 +21,7 @@ $currentPage = 'ai-exam.php';
     <?php include 'includes/sidebar.php'; ?>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0 transition-all duration-300">
+    <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[1024px]:ml-0 transition-all duration-300">
       <!-- Topbar -->
       <?php include 'includes/topbar.php'; ?>
 

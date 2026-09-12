@@ -25,7 +25,7 @@ include 'includes/header.php';
       <p class="flex items-center gap-2.5 text-[12px] font-black tracking-[0.15em] text-[#2369dd] uppercase mb-1"><span class="w-6 h-[3px] rounded-full bg-pink-500"></span>SHOPPING CART</p>
       <h2 class="text-[28px] font-bold text-navy-950 tracking-tight mb-8">ตะกร้าของฉัน</h2>
 
-      <div class="grid grid-cols-[1fr_360px] gap-8 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
         
         <!-- Cart Items -->
         <div class="space-y-4">
@@ -166,7 +166,7 @@ include 'includes/header.php';
         </div>
       </div>
 
-      <div class="grid grid-cols-[1fr_360px] gap-8 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[1fr_360px] gap-8 items-start max-[1024px]:grid-cols-1">
         
         <!-- Forms -->
         <div class="space-y-6">

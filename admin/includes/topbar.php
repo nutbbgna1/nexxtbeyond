@@ -1,6 +1,6 @@
 <header class="sticky top-0 z-30 flex items-center justify-between h-[72px] px-6 bg-white border-b border-[#e8ecf2] shadow-[0_4px_24px_rgba(15,42,83,0.02)]">
   <div class="flex items-center gap-4">
-    <button class="w-10 h-10 flex items-center justify-center rounded-[10px] border border-[#e8ecf2] text-navy-950 hidden max-[960px]:flex hover:bg-[#f8fafc] transition-colors" onclick="document.getElementById('adminSidebar').classList.toggle('-translate-x-full'); document.getElementById('adminOverlay').classList.toggle('hidden');">
+    <button class="w-10 h-10 flex items-center justify-center rounded-[10px] border border-[#e8ecf2] text-navy-950 hidden max-[1024px]:flex hover:bg-[#f8fafc] transition-colors" onclick="document.getElementById('adminSidebar').classList.toggle('-translate-x-full'); document.getElementById('adminOverlay').classList.toggle('hidden');">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
     <div>
@@ -28,4 +28,4 @@
   </div>
 </header>
 <!-- Overlay for mobile sidebar -->
-<div id="adminOverlay" class="fixed inset-0 bg-navy-950/20 backdrop-blur-sm z-30 hidden max-[960px]:block transition-opacity" onclick="document.getElementById('adminSidebar').classList.add('-translate-x-full'); this.classList.add('hidden');"></div>
+<div id="adminOverlay" class="fixed inset-0 bg-navy-950/20 backdrop-blur-sm z-30 hidden max-[1024px]:block transition-opacity" onclick="document.getElementById('adminSidebar').classList.add('-translate-x-full'); this.classList.add('hidden');"></div>

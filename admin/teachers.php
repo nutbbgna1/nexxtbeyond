@@ -17,7 +17,7 @@ $currentPage = 'teachers.php';
 <body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0">
+  <div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[1024px]:ml-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="flex-1 p-8 max-[640px]:p-4">
       <div class="mb-6 flex items-center justify-between gap-4 max-[640px]:flex-col max-[640px]:items-stretch">

@@ -57,7 +57,7 @@ $currentPage = 'roadmap.php';
 <body class="bg-[#f4f7fb] text-navy-950 font-sans">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 ml-[240px] max-[960px]:ml-0 min-w-0">
+  <div class="flex-1 ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="road-main">
       

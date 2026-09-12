@@ -42,7 +42,7 @@ function learningStepTitle($step): string
 <body class="student-portal bg-[#f4f7fb] text-navy-950">
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
-  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 min-w-0">
+  <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 min-w-0">
     <?php include 'includes/topbar.php'; ?>
     <main class="p-8 max-[640px]:p-4">
       <section class="mb-8 border-b border-[#dce3ec] pb-7">

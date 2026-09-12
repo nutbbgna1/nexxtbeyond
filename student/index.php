@@ -75,7 +75,7 @@ $displayName = trim(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['la
 <div class="min-h-screen flex">
   <?php include 'includes/sidebar.php'; ?>
 
-  <div class="flex-1 flex flex-col ml-[240px] max-[960px]:ml-0 transition-all duration-300 min-w-0">
+  <div class="flex-1 flex flex-col ml-[240px] max-[1024px]:ml-0 transition-all duration-300 min-w-0">
     <?php include 'includes/topbar.php'; ?>
 
     <main class="flex-1 p-8 max-[640px]:p-4">

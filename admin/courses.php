@@ -12,7 +12,7 @@ $currentPage = 'courses.php';
 <script src="../assets/js/admin-guard.js"></script><script defer src="../assets/js/admin-courses.js"></script>
 </head><body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased">
 <div class="min-h-screen flex"><?php include 'includes/sidebar.php'; ?>
-<div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0"><?php include 'includes/topbar.php'; ?>
+<div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[1024px]:ml-0"><?php include 'includes/topbar.php'; ?>
 <main class="flex-1 p-8 max-[640px]:p-4">
   <div class="mb-6 flex justify-between gap-4 max-[700px]:flex-col">
     <button id="add-course" class="h-11 px-5 rounded-xl bg-pink-500 text-white text-[14px] font-bold shadow-[0_4px_12px_rgba(231,45,130,.3)]">＋ สร้างคอร์สใหม่</button>

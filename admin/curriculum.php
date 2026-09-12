@@ -7,7 +7,7 @@ $pageTitle='จัดการบทเรียน (Curriculum)'; $pageDesc='�
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="../assets/js/admin-guard.js"></script><script defer src="../assets/js/admin-curriculum.js"></script></head>
 <body class="bg-[#f4f7fb] text-navy-950 font-sans antialiased"><div class="min-h-screen flex"><?php include 'includes/sidebar.php'; ?>
-<div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[960px]:ml-0"><?php include 'includes/topbar.php'; ?>
+<div class="flex-1 flex flex-col min-w-0 ml-[240px] max-[1024px]:ml-0"><?php include 'includes/topbar.php'; ?>
 <main class="flex-1 p-8 max-[640px]:p-4">
   <div class="mb-6 flex justify-between gap-4 max-[700px]:flex-col">
     <select id="curriculum-course" class="h-11 px-4 rounded-xl bg-white border border-[#dce4ef] min-w-[360px] max-[700px]:min-w-0"><option value="">กำลังโหลดคอร์ส...</option></select>

@@ -48,7 +48,7 @@ include 'includes/header.php';
 
   <!-- Article Body -->
   <section class="py-[60px]">
-    <div class="container max-w-[1100px] grid grid-cols-[1fr_320px] gap-12 max-[960px]:grid-cols-1">
+    <div class="container max-w-[1100px] grid grid-cols-[1fr_320px] gap-12 max-[1024px]:grid-cols-1">
       
       <!-- Main Content -->
       <article class="prose prose-lg prose-slate max-w-none text-navy-900">

@@ -29,7 +29,7 @@ include 'includes/header.php';
         <input class="w-full h-12 pl-12 pr-4 border border-[#dce4ef] rounded-full text-navy-950 bg-white placeholder-[#aebbd0] outline-none focus:border-pink-500 focus:shadow-[0_0_0_3px_rgba(231,45,130,0.1)] transition-all shadow-[0_4px_20px_rgba(15,42,83,0.04)]" type="search" placeholder="Search">
       </div>
 
-      <div class="grid grid-cols-[240px_1fr] gap-8 items-start max-[960px]:grid-cols-1">
+      <div class="grid grid-cols-[240px_1fr] gap-8 items-start max-[1024px]:grid-cols-1">
         
         <!-- Sidebar Filter -->
         <aside class="bg-[#f8fafc] border border-[#e8ecf2] rounded-[20px] p-6 shadow-sm">

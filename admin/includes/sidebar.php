@@ -30,7 +30,7 @@ foreach ($adminMenu as $group => $items) {
   if (!$adminMenu[$group]) unset($adminMenu[$group]);
 }
 ?>
-<aside class="fixed inset-y-0 left-0 w-[240px] bg-navy-950 text-white overflow-y-auto flex flex-col z-40 max-[960px]:-translate-x-full transition-transform duration-300 shadow-[4px_0_24px_rgba(15,42,83,0.1)]" id="adminSidebar">
+<aside class="fixed inset-y-0 left-0 w-[240px] bg-navy-950 text-white overflow-y-auto flex flex-col z-40 max-[1024px]:-translate-x-full transition-transform duration-300 shadow-[4px_0_24px_rgba(15,42,83,0.1)]" id="adminSidebar">
   <div class="p-6 border-b border-white/10 shrink-0">
     <a href="index.php" class="inline-flex items-center gap-3 w-full" aria-label="Next Beyond Admin">
       <svg class="w-[32px] h-[32px] shrink-0" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

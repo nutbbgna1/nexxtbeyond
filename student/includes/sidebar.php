@@ -32,7 +32,7 @@ $u = $currentUser ?? [];
 $displayName = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?: 'นักเรียน';
 $initials = mb_strtoupper(mb_substr($u['first_name'] ?? 'N', 0, 1) . mb_substr($u['last_name'] ?? 'B', 0, 1));
 ?>
-<aside id="studentSidebar" class="fixed inset-y-0 left-0 w-[240px] bg-white border-r border-[#e8ecf2] overflow-y-auto flex flex-col z-40 shadow-[2px_0_16px_rgba(15,42,83,0.06)] max-[960px]:-translate-x-full transition-transform duration-300">
+<aside id="studentSidebar" class="fixed inset-y-0 left-0 w-[240px] bg-white border-r border-[#e8ecf2] overflow-y-auto flex flex-col z-40 shadow-[2px_0_16px_rgba(15,42,83,0.06)] max-[1024px]:-translate-x-full transition-transform duration-300">
 
   <!-- Logo -->
   <div class="p-5 border-b border-[#e8ecf2] shrink-0">
@@ -102,4 +102,4 @@ $initials = mb_strtoupper(mb_substr($u['first_name'] ?? 'N', 0, 1) . mb_substr($
 </aside>
 
 <!-- Mobile Overlay -->
-<div id="sidebarOverlay" class="fixed inset-0 bg-navy-950/50 z-30 hidden" onclick="document.getElementById('studentSidebar').classList.add('max-[960px]:-translate-x-full');this.classList.add('hidden')"></div>
+<div id="sidebarOverlay" class="fixed inset-0 bg-navy-950/50 z-30 hidden" onclick="document.getElementById('studentSidebar').classList.add('max-[1024px]:-translate-x-full');this.classList.add('hidden')"></div>
