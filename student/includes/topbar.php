@@ -6,6 +6,13 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
 ?>
 <header class="student-topbar sticky top-0 z-30 bg-white border-b border-[#e8ecf2]">
   <div class="flex items-center h-[60px] px-6 gap-4">
+    <!-- Mobile hamburger -->
+    <button id="sidebarToggle" class="hidden max-[1024px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" type="button" aria-label="เปิดเมนู" aria-controls="studentSidebar" aria-expanded="false">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+
     <a href="index.php" class="student-mobile-brand" aria-label="Next Beyond Student">
       <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
         <line x1="25" y1="32" x2="31" y2="8" stroke="#ff168b" stroke-width="8" stroke-linecap="round"/>
@@ -14,13 +21,6 @@ $pageTitle = $pageTitle ?? 'Student Dashboard';
       </svg>
       <span><strong>NEXT BEYOND</strong><small>STUDENT</small></span>
     </a>
-
-    <!-- Mobile hamburger -->
-    <button id="sidebarToggle" class="hidden max-[1024px]:flex items-center justify-center w-9 h-9 rounded-lg text-[#65738a] hover:bg-[#f4f7fb] transition-colors" type="button" aria-label="เปิดเมนู" aria-controls="studentSidebar" aria-expanded="false">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-      </svg>
-    </button>
 
     <h1 class="text-[16px] font-bold text-navy-950 truncate"><?= htmlspecialchars($pageTitle) ?></h1>
 
