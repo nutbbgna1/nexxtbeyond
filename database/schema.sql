@@ -90,6 +90,29 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
     FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `calendar_events` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(300) NOT NULL,
+    `event_type` ENUM('lesson','exam','meeting','other') NOT NULL DEFAULT 'lesson',
+    `course_id` INT,
+    `teacher_id` INT NOT NULL,
+    `event_date` DATE NOT NULL,
+    `start_time` TIME NOT NULL,
+    `end_time` TIME NOT NULL,
+    `location` VARCHAR(255),
+    `notes` TEXT,
+    `color` VARCHAR(20) NOT NULL DEFAULT '#2563eb',
+    `status` ENUM('scheduled','cancelled') NOT NULL DEFAULT 'scheduled',
+    `created_by` INT,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_calendar_date` (`event_date`),
+    INDEX `idx_calendar_teacher_date` (`teacher_id`, `event_date`),
+    FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`teacher_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 3. Exams & Placement Tests
 CREATE TABLE IF NOT EXISTS `exams` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

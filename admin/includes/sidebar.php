@@ -8,7 +8,8 @@ $adminMenu = [
     ["courses.php", "คอร์สเรียน"],
     ["curriculum.php", "บทเรียนในคอร์ส"],
     ["../science-studio/", "Science Learning Studio"],
-    ["teachers.php", "ครูผู้สอน"]
+    ["teachers.php", "ครูผู้สอน"],
+    ["calendar.php", "ปฏิทินและตารางสอน"]
   ],
   "ASSESSMENT" => [
     ["tests.php", "แบบทดสอบ"],
